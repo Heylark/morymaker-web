@@ -10,6 +10,7 @@ import {
   encodeAuthCookie,
 } from '@/lib/cookies';
 import { extractEmail, extractRoles } from '@/lib/tokens';
+import { safeReturnTo } from '@/lib/return-to';
 
 interface PkceCookiePayload {
   verifier: string;
@@ -122,7 +123,8 @@ export async function GET(request: NextRequest) {
   const email = extractEmail(idToken);
   const roles = extractRoles(accessToken);
 
-  const returnTo = pkcePayload.returnTo || '/console';
+  // 무서명 쿠키에서 꺼낸 값이라 저장 시점 검증을 믿지 않고 사용 직전 다시 검증한다(최종 방어선)
+  const returnTo = safeReturnTo(pkcePayload.returnTo);
   const response = NextResponse.redirect(new URL(returnTo, request.url));
 
   // mm_pkce_verifier는 여기서 최종 삭제(one-time use) — 교환 성공/실패 모든 경로에서 정리됨

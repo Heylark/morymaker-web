@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createPkcePair, createState } from '@/lib/pkce';
 import { COOKIE_PKCE, PKCE_COOKIE_OPTIONS } from '@/lib/cookies';
-
-// 콘솔 게이트가 붙은 유일한 실 표면 — returnTo 미지정 시 로그인 후 여기로 보낸다.
-const DEFAULT_RETURN_TO = '/console';
+import { safeReturnTo } from '@/lib/return-to';
 
 /**
  * GET /oauth/login — PKCE 로그인 개시.
@@ -12,7 +10,8 @@ const DEFAULT_RETURN_TO = '/console';
  * 이 단계는 verifier/state를 콜백까지 들고 가기 위한 쿠키 set이 필수다.
  */
 export async function GET(request: NextRequest) {
-  const returnTo = request.nextUrl.searchParams.get('returnTo') || DEFAULT_RETURN_TO;
+  // 쿠키에 넣기 전 동일 오리진 상대경로인지 검증(저장 시점 1차 방어) — 위반 시 콘솔 화면으로 안전 폴백
+  const returnTo = safeReturnTo(request.nextUrl.searchParams.get('returnTo'));
 
   const { verifier, challenge } = await createPkcePair();
   const state = createState();
