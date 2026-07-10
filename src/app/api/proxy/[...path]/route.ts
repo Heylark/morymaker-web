@@ -66,11 +66,24 @@ async function proxyRequest(
 
   const mode = getAuthMode(targetPath, request.method);
 
-  // ─── PUBLIC: 토큰 기계 완전 skip → plain passthrough ───────────────────────────
+  // ─── PUBLIC: 토큰 기계 완전 skip → plain passthrough (메서드 무관 — 공개 쓰기 포함) ─────
   if (mode === 'public') {
     const requestHeaders: Record<string, string> = {};
     const contentType = request.headers.get('content-type');
     if (contentType) requestHeaders['Content-Type'] = contentType;
+
+    // 공개 쓰기(POST 사전등록·현장등록 등)도 body를 upstream에 전달해야 한다 — 누락 시
+    // 인증은 통과하지만 api가 필수 필드 누락(400)으로 거부한다.
+    const hasBody = request.method !== 'GET' && request.method !== 'HEAD';
+    let bodyBuffer: Buffer | undefined;
+    if (hasBody) {
+      try {
+        bodyBuffer = Buffer.from(await request.arrayBuffer());
+      } catch (err) {
+        console.error(`[Proxy] 요청 본문 읽기 실패: ${request.method} ${targetPath}`, err);
+        return NextResponse.json({ error: '요청 본문 읽기 실패' }, { status: 400 });
+      }
+    }
 
     let upstream: Response;
     try {
@@ -78,17 +91,22 @@ async function proxyRequest(
         method: request.method,
         headers: requestHeaders,
         cache: 'no-store',
+        ...(bodyBuffer !== undefined ? { body: bodyBuffer as BodyInit } : {}),
       });
     } catch (err) {
       console.error(`[Proxy] 업스트림 요청 실패: ${request.method} ${targetPath}`, err);
       return NextResponse.json({ error: '업스트림 서버 연결 실패' }, { status: 502 });
     }
 
-    return new NextResponse(upstream.body, {
+    const publicResponse = new NextResponse(upstream.body, {
       status: upstream.status,
       statusText: upstream.statusText,
       headers: buildResponseHeaders(upstream),
     });
+    // PUBLIC 응답은 토큰·개인정보가 섞인 응답(허브 조회 등)일 수 있어 공유 캐시 누출을 막기 위해
+    // no-store를 균일 강제한다(PRIVATE/HYBRID와 동일 위생 — 순수 정적 공개 GET도 예외 없음).
+    publicResponse.headers.set('Cache-Control', 'no-store');
+    return publicResponse;
   }
 
   // ─── PRIVATE / HYBRID: 토큰 처리 공통 경로 ─────────────────────────────────────
