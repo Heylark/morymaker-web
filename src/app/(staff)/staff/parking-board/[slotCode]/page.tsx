@@ -21,8 +21,9 @@ const REGISTER_RESULT_LABEL: Record<string, string> = {
 
 /**
  * PRK-02 자리 처리 — 보드 타일 탭(기존 기록 id)과 "새 자리 등록"(`new`) 두 진입을 한 페이지가
- * 처리한다. 기존 기록 상세는 별도 단건 조회 endpoint가 없어 보드와 동일한 목록 쿼리(RQ 캐시
- * 공유)에서 id로 찾는다 — parking-records 목록 화면과 캐시를 공유해 왕복을 늘리지 않는다.
+ * 처리한다. 기존 기록 상세는 별도 단건 조회 endpoint가 없어 목록(parking-records)을 필터 없이
+ * 불러와 id로 찾는다 — 보드는 주차중만 필터하지만 상세는 어떤 상태의 기록이든(출차 포함) 찾을 수
+ * 있어야 하므로 필터 없이 조회한다(그래서 보드의 필터 캐시와는 별개 쿼리다).
  */
 export default function ParkingSlotPage() {
   const params = useParams<{ slotCode: string }>();
