@@ -244,3 +244,6 @@ $RECYCLE.BIN/
 
 # pnpm
 package-lock.json
+
+# mkcert 로컬 HTTPS 인증서 (머신별 생성 — scripts/setup-local-https.sh)
+certs/
