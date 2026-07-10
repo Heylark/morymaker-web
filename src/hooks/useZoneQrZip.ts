@@ -3,7 +3,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { downloadZoneQrZip, ConsoleApiError } from '@/lib/api/console';
 
-async function triggerZipDownload(eid: string, zid: string, zoneName: string): Promise<void> {
+// export — 컴포넌트 렌더 없이 Content-Type 가드 로직만 단위 테스트하기 위함(useZoneQrZip.test.ts).
+export async function triggerZipDownload(eid: string, zid: string, zoneName: string): Promise<void> {
   const res = await downloadZoneQrZip(eid, zid);
   const contentType = res.headers.get('Content-Type') ?? '';
   // 401 등: 프록시가 JSON을 반환하므로 zip으로 저장하지 않고 에러로 승격한다.
