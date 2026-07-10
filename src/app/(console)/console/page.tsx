@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { proxyFetch } from '@/lib/proxy-fetch';
 
 /** api EventResponse DTO 그대로 소비(추가 변환 불요 — api 응답 `{data: T}` 계약) */
@@ -53,7 +54,8 @@ export default function ConsolePage() {
         <ul>
           {state.events.map((event) => (
             <li key={event.id}>
-              {event.name} — {event.status}
+              {event.name} — {event.status} ·{' '}
+              <Link href={`/events/${event.id}/parking`}>주차 구성</Link>
             </li>
           ))}
         </ul>
