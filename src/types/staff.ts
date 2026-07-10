@@ -31,8 +31,11 @@ export interface LookupMeta {
   searchState: 'ONE' | string;
 }
 
+// 응답 최상위 키는 공통 성공 포맷과 동일하게 'data'다(다른 목록 endpoint와 동형) — 'items'가
+// 아니다. 이전 초안이 문서 프로즈("아이템 목록")를 그대로 필드명으로 옮겨 실 응답과 어긋났던
+// 것을 실측(컨트롤러가 ApiResponse(data=..., meta=Meta(total,searchState))로 응답)으로 교정했다.
 export interface LookupResult {
-  items: LookupItem[];
+  data: LookupItem[];
   meta: LookupMeta;
 }
 
