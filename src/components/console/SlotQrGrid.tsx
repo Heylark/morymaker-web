@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useZoneSlots } from '@/hooks/useZoneSlots';
+import { SlotAutoLabel } from '@/components/shared/SlotAutoLabel';
 import { QrPreview } from './QrPreview';
-import { SlotAutoLabel } from './SlotAutoLabel';
 import { ZoneQrZipButton } from './ZoneQrZipButton';
 import type { ZoneResponse } from '@/types/console';
 
