@@ -48,3 +48,26 @@ export function extractEmail(idToken: string): string {
   const payload = decodeJwtPayload(idToken);
   return typeof payload?.email === 'string' ? payload.email : '';
 }
+
+/**
+ * access token의 event_ids 클레임을 추출한다. auth가 3-값 의미론으로 발급한다 —
+ * 클레임 자체가 없으면(배열이 아니라 키 부재) SYSTEM_ADMIN(전체 허용), 빈 배열은 역할은 있으나
+ * 배정된 행사가 0건, 값이 있으면 배정된 행사 id 목록이다. extractRoles와 동형(비권위 UI 힌트) —
+ * 실 인가는 api EventScopeGuard가 담당하므로 여기서 잘못 판정해도 보안 경계는 뚫리지 않는다.
+ *
+ * 반환값 3종:
+ *   null       → 클레임 부재(SYSTEM_ADMIN, 전체 허용)
+ *   []         → 배정된 행사 0건
+ *   string[]   → 배정된 행사 id 목록
+ *
+ * 토큰 디코딩 자체가 실패하거나 클레임이 배열이 아닌 손상된 형태면, "클레임 부재"(SYSTEM_ADMIN
+ * 오분류)와 절대 혼동하지 않도록 안전하게 빈 배열로 수렴한다(fail-safe — 권한 없음 취급).
+ */
+export function extractEventIds(accessToken: string): string[] | null {
+  const payload = decodeJwtPayload(accessToken);
+  if (!payload) return []; // 디코딩 실패 — SYSTEM_ADMIN 오분류 방지, 안전하게 "배정 0건" 취급
+  if (!('event_ids' in payload)) return null; // 클레임 자체가 없음 — SYSTEM_ADMIN(전체 허용)
+  const eventIds = payload.event_ids;
+  if (!Array.isArray(eventIds)) return []; // malformed(배열 아님) — 안전하게 빈 배열
+  return eventIds.filter((id): id is string => typeof id === 'string');
+}

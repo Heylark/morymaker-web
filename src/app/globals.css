@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+@theme {
+  /* 의전 톤 base — kiosk manifest theme_color(#0c1322 deep navy)와 정합 */
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f4f6fa;
+  --color-ink: #0c1322;
+  --color-ink-muted: #55607a; /* 고대비 본문 */
+  --color-primary: #1b3a6b;
+  --color-primary-ink: #ffffff; /* 의전 네이비 */
+  /* 3상태(검색·주차) 의미색 — 색+텍스트 이중(색맹 대비, 색 단독 표시 금지) */
+  --color-state-empty: #2f7d55; /* 빈자리 / 검색 없음 계열 */
+  --color-state-active: #1b6fb3; /* 주차중 / 검색 1건 */
+  --color-state-review: #c9781a; /* 확인필요 배지 / 검색 다건 */
+  --color-danger: #b3261e;
+  --color-success: #2f7d55;
+  /* 터치·타이포 — 현장(장갑·거리) 대비 */
+  --spacing-touch: 2.75rem; /* 44px 최소 터치 타깃 */
+  --text-desk: 1.125rem;
+  --text-desk-lg: 1.75rem; /* 이름·소속 큰 글씨 — 의전 사고 방지 */
+  --radius-card: 0.75rem;
+}
