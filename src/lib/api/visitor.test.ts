@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { VisitorApiError, getHub, getOnsiteForm, preregPlate, registerOnsite } from './visitor';
-import type { OnsiteRegisterRequest } from '@/types/visitor';
+import { VisitorApiError, getHub, getOnsiteForm, getSlotView, preregPlate, registerOnsite, selfPark } from './visitor';
+import type { OnsiteRegisterRequest, RecordRegisterRequest } from '@/types/visitor';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status });
@@ -114,5 +114,122 @@ describe('lib/api/visitor — BFF 프록시 경유 방문자 공개 도메인 �
       status: 400,
       code: 'VALIDATION_FAILED',
     });
+  });
+
+  it('getSlotView — slotCode를 인코딩해 자리 조회 경로를 호출하고 viewType 리터럴을 그대로 반환한다', async () => {
+    const slotView = {
+      slot: { slotCode: 'z1-01', slotSig: 'sig1', display: '지하 2층 A구역 1' },
+      viewType: 'SELF_PARK_FORM',
+      occupied: false,
+      event: { name: '행사', bgColor: null, pointColor: null },
+    };
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({ data: slotView }));
+
+    const result = await getSlotView('z1 01');
+
+    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/public/p/z1%2001', undefined);
+    expect(result).toEqual(slotView);
+    expect(result.viewType).toBe('SELF_PARK_FORM'); // 축약형('SELF') 아님을 실측 고정
+  });
+
+  it('getSlotView — 무효 slotCode는 404 VisitorApiError로 던진다(enumeration-safe)', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse({ error: { code: 'NOT_FOUND', message: '유효하지 않은 자리입니다' } }, 404),
+    );
+
+    await expect(getSlotView('bad-slot')).rejects.toMatchObject({ status: 404, code: 'NOT_FOUND' });
+    await expect(getSlotView('bad-slot')).rejects.toBeInstanceOf(VisitorApiError);
+  });
+
+  it('selfPark — POST + JSON 바디로 호출하고 성공(201 PARKED)은 res.ok로 판정해 data를 꺼낸다', async () => {
+    const parkResult = {
+      result: 'PARKED',
+      record: {
+        id: 'r1',
+        zoneId: 'z1',
+        slotSig: 'sig1',
+        slotDisplay: '지하 2층 A구역 1',
+        plate: '12가3456',
+        registeredBy: 'SELF',
+        registeredAt: '2026-07-10T12:00:00Z',
+        status: '주차중',
+        reviewNeeded: false,
+      },
+      message: null,
+    };
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({ data: parkResult }, 201));
+
+    const request: RecordRegisterRequest = { plate: '12가3456' };
+    const result = await selfPark('z1-01', request);
+
+    const [url, init] = vi.mocked(fetch).mock.calls[0];
+    expect(url).toBe('/api/proxy/api/public/p/z1-01/park');
+    expect(init?.method).toBe('POST');
+    expect(JSON.parse(init?.body as string)).toEqual(request);
+    expect(result).toEqual(parkResult);
+  });
+
+  it('selfPark — 주차중 자리 승계는 200(SUPERSEDED)이며 ===200이 아닌 res.ok로 판정한다', async () => {
+    const supersedeResult = {
+      result: 'SUPERSEDED',
+      record: {
+        id: 'r2',
+        zoneId: 'z1',
+        slotSig: 'sig1',
+        slotDisplay: '지하 2층 A구역 1',
+        plate: '34나5678',
+        registeredBy: 'SELF',
+        registeredAt: '2026-07-10T12:05:00Z',
+        status: '주차중',
+        reviewNeeded: true,
+      },
+      supersededRecord: { id: 'r1', zoneId: 'z1', slotSig: 'sig1', slotDisplay: '지하 2층 A구역 1', plate: '12가3456', registeredBy: 'SELF', registeredAt: '2026-07-10T12:00:00Z', status: '출차', reviewNeeded: false },
+      message: '기존 등록은 자동 출차 처리되고, 현장 요원이 확인합니다',
+    };
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({ data: supersedeResult }, 200));
+
+    const result = await selfPark('z1-01', { plate: '34나5678' });
+
+    expect(result.result).toBe('SUPERSEDED');
+    expect(result.message).toBe('기존 등록은 자동 출차 처리되고, 현장 요원이 확인합니다');
+  });
+
+  it('selfPark — plate 공백은 400(field=plate)으로 던진다', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse({ error: { code: 'VALIDATION_FAILED', message: '차량번호를 입력하세요', field: 'plate' } }, 400),
+    );
+
+    await expect(selfPark('z1-01', { plate: '' })).rejects.toMatchObject({
+      status: 400,
+      code: 'VALIDATION_FAILED',
+    });
+  });
+
+  it('selfPark — token은 body 필드로 전달된다(query 아님)', async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse({
+        data: {
+          result: 'PARKED',
+          record: {
+            id: 'r3',
+            zoneId: 'z1',
+            slotSig: 'sig1',
+            slotDisplay: '지하 2층 A구역 1',
+            plate: '12가3456',
+            registeredBy: 'SELF',
+            registeredAt: '2026-07-10T12:00:00Z',
+            status: '주차중',
+            reviewNeeded: false,
+          },
+          message: null,
+        },
+      }, 201),
+    );
+
+    await selfPark('z1-01', { plate: '12가3456', token: 'hub-token' });
+
+    const [url, init] = vi.mocked(fetch).mock.calls[0];
+    expect(url).toBe('/api/proxy/api/public/p/z1-01/park'); // token이 query로 붙지 않음
+    expect(JSON.parse(init?.body as string)).toMatchObject({ token: 'hub-token' });
   });
 });

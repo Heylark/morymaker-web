@@ -93,3 +93,55 @@ export interface OnsiteRegisterResult {
   checkinQr: HubCheckinQr;
   message: string;
 }
+
+// ── VIS-01 자리 QR 셀프 주차 (GET /api/public/p/{slotCode}) ──────────────────
+
+export interface PublicSlot {
+  slotCode: string; // 물리 QR 값(예: 'z1-01')
+  slotSig: string; // 서버 자리 시그
+  display: string; // 서버 조립 표시명(예: '지하 2층 A구역 8') — 파생 금지, 그대로 렌더
+}
+
+export interface PublicSlotEvent {
+  name: string;
+  bgColor?: string | null; // NON_NULL — null이면 키 부재 → optional
+  pointColor?: string | null;
+}
+
+export interface PublicSlotView {
+  slot: PublicSlot;
+  viewType: 'SELF_PARK_FORM' | 'OCCUPIED_NOTICE'; // 실 리터럴 — 축약형 아님
+  occupied: boolean; // viewType 편의 중복 필드 — 분기는 viewType 기준으로 한다
+  event: PublicSlotEvent;
+}
+
+// POST /api/public/p/{slotCode}/park → 201(PARKED) / 200(SUPERSEDED|RE_REGISTERED)
+export interface RecordRegisterRequest {
+  plate: string; // @NotBlank
+  vipName?: string;
+  phone?: string;
+  token?: string; // 허브 경유 프리필 시만 포함
+}
+
+export interface PublicParkRecord {
+  id: string;
+  zoneId: string;
+  slotSig: string;
+  slotDisplay: string;
+  plate: string;
+  phone?: string | null;
+  vipName?: string | null;
+  guestId?: string | null;
+  registeredBy: string;
+  registeredAt: string; // Instant UTC ISO — KST 변환은 표시 시 web 책임
+  status: string;
+  reviewNeeded: boolean;
+}
+
+export interface RecordRegisterResult {
+  result: 'PARKED' | 'SUPERSEDED' | 'RE_REGISTERED';
+  record: PublicParkRecord;
+  mapping?: { matched: boolean; guestId?: string | null } | null; // NON_NULL
+  supersededRecord?: PublicParkRecord | null;
+  message?: string | null; // SUPERSEDED·RE_REGISTERED만 존재, PARKED는 null
+}
