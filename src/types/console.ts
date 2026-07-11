@@ -41,3 +41,55 @@ export interface SlotForQrResponse {
   slotFullName: string; // 서버 조립 표시명. SlotAutoLabel이 그대로 렌더
   scanUrl: string; // 서버 조립 절대 URL. QrPreview가 그대로 인코딩(자체 조립 금지)
 }
+
+/**
+ * 관리자 콘솔 행사(ADM-01/02) 응답/요청 타입 — 실측 api DTO 미러(EventResponse.kt·
+ * EventCreateRequest.kt·EventUpdateRequest.kt 직접 대조, 스펙 JSON 예시 아님).
+ *
+ * create/update 요청 필드셋은 서버 계약이 비대칭이다: create는 브랜딩 컬러 4종을 optional로
+ * 받지만 status/active는 안 받고(서버 기본값), update는 반대로 컬러 없이 status/active를 받는다.
+ * 브랜딩 컬러 4종은 두 요청 타입 모두에서 구조적으로 제외한다 — 서버가 별도 게이트
+ * (PUT .../branding)로 분리해 지키는 불변식을 프론트도 타입 레벨에서 미러해, 실수로 컬러 필드를
+ * 채워 보내는 코드 자체가 컴파일되지 않게 막는다(라이브 키오스크 화면에 반영되는 값이라 실수
+ * 반영 비용이 크다).
+ */
+
+// GET /api/events, /api/events/{eid} → {data: EventResponse | EventResponse[]}
+export interface EventResponse {
+  id: string;
+  name: string;
+  eventDate: string | null; // Instant? → ISO-8601 offset 문자열
+  place: string | null;
+  type: string | null; // 연회식 / 극장식 지정석 / 극장식 자유석 (분류 라벨, 좌석 구성 미결정)
+  status: string; // 준비 / 운영중 / 종료
+  active: boolean; // 키오스크·공개 화면 노출 여부
+  bgColor: string | null;
+  pointColor: string | null;
+  titleColor: string | null;
+  bodyColor: string | null;
+  kv: string | null; // 키비주얼 텍스트/식별자
+  defaultIdleMode: string | null; // 응답 전용(본 REQ 폼 미편집 — 브랜딩 REQ 범위)
+  smsPolicy: string | null; // 응답 전용(본 REQ 폼 미편집)
+}
+
+// POST /api/events → 201 {data: EventResponse} (권한 SYSTEM_ADMIN)
+// 브랜딩 컬러·status·active는 타입에서 제외(서버 기본값 상속 — 위 설명 참조)
+export interface EventCreateRequest {
+  name: string;
+  eventDate?: string | null;
+  place?: string | null;
+  type?: string | null;
+  kv?: string | null;
+}
+
+// PUT /api/events/{eid} → 200 {data: EventResponse}
+// Kotlin EventUpdateRequest 정확 미러 — 브랜딩 컬러 없음(§2-4 게이트 분리)
+export interface EventUpdateRequest {
+  name: string;
+  eventDate?: string | null;
+  place?: string | null;
+  type?: string | null;
+  kv?: string | null;
+  status: string;
+  active: boolean;
+}
