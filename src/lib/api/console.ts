@@ -1,5 +1,13 @@
 import { proxyFetch } from '@/lib/proxy-fetch';
-import type { ZoneResponse, ZoneCreateRequest, ZoneUpdateRequest, SlotForQrResponse } from '@/types/console';
+import type {
+  ZoneResponse,
+  ZoneCreateRequest,
+  ZoneUpdateRequest,
+  SlotForQrResponse,
+  EventResponse,
+  EventCreateRequest,
+  EventUpdateRequest,
+} from '@/types/console';
 
 /** api 공통 에러 포맷(GlobalExceptionHandler — `{ error: { code, message, field } }`). */
 interface ApiErrorBody {
@@ -67,4 +75,44 @@ export async function listSlotsForQr(eid: string, zid: string): Promise<SlotForQ
  */
 export function downloadZoneQrZip(eid: string, zid: string): Promise<Response> {
   return proxyFetch(`${zonesBase(eid)}/${zid}/qr-zip`);
+}
+
+const eventsBase = 'api/events';
+// trailing slash 없음 — zonesBase와 동일 규약(3분법 PRIVATE 판정 정합).
+
+export async function listEvents(): Promise<EventResponse[]> {
+  const res = await proxyFetch(eventsBase);
+  if (!res.ok) return throwOnError(res);
+  const body: { data: EventResponse[] } = await res.json();
+  return body.data;
+}
+
+export async function getEvent(eid: string): Promise<EventResponse> {
+  const res = await proxyFetch(`${eventsBase}/${eid}`);
+  if (!res.ok) return throwOnError(res);
+  const body: { data: EventResponse } = await res.json();
+  return body.data;
+}
+
+/** POST — SYSTEM_ADMIN 전용(EVENT_ADMIN은 서버가 403 ROLE_FORBIDDEN으로 최종 방어). */
+export async function createEvent(request: EventCreateRequest): Promise<EventResponse> {
+  const res = await proxyFetch(eventsBase, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+  if (!res.ok) return throwOnError(res);
+  const body: { data: EventResponse } = await res.json();
+  return body.data;
+}
+
+export async function updateEvent(eid: string, request: EventUpdateRequest): Promise<EventResponse> {
+  const res = await proxyFetch(`${eventsBase}/${eid}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+  if (!res.ok) return throwOnError(res);
+  const body: { data: EventResponse } = await res.json();
+  return body.data;
 }
