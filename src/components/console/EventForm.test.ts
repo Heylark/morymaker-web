@@ -3,7 +3,7 @@ import { datetimeLocalToIso, isoToDatetimeLocal } from './EventForm';
 
 /**
  * 렌더 없이 datetime-local ↔ ISO 변환 순수 함수만 단위 테스트한다(vitest.config.ts가 jsdom 없이
- * node 환경만 제공 — 컴포넌트 렌더 테스트는 별도 인프라 필요, 기존 PATTERN-019 참조).
+ * node 환경만 제공 — 컴포넌트 렌더·E2E 테스트는 브라우저 인프라가 필요한데 이 프로젝트엔 아직 없다).
  * 두 시각 경계(폼 ↔ api)의 핵심 위험은 null/빈 값 처리와 왕복(round-trip) 안정성이다.
  */
 describe('EventForm — isoToDatetimeLocal (ISO → datetime-local 표시값)', () => {
