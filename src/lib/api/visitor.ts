@@ -5,6 +5,9 @@ import type {
   OnsiteRegisterResult,
   PreregResult,
   PublicHub,
+  PublicSlotView,
+  RecordRegisterRequest,
+  RecordRegisterResult,
   VisitorApiErrorBody,
 } from '@/types/visitor';
 
@@ -69,5 +72,29 @@ export async function registerOnsite(
   // 성공은 200이 아니라 201 Created — res.ok(200~299 전부 true)로 판정해 안전하게 포함한다.
   if (!res.ok) return throwOnError(res);
   const body: { data: OnsiteRegisterResult } = await res.json();
+  return body.data;
+}
+
+// ── VIS-01 자리 QR 셀프 주차 ──────────────────────────────────────────────────
+
+export async function getSlotView(slotCode: string): Promise<PublicSlotView> {
+  const res = await proxyFetch(`api/public/p/${encodeURIComponent(slotCode)}`);
+  if (!res.ok) return throwOnError(res);
+  const body: { data: PublicSlotView } = await res.json();
+  return body.data;
+}
+
+export async function selfPark(
+  slotCode: string,
+  request: RecordRegisterRequest,
+): Promise<RecordRegisterResult> {
+  const res = await proxyFetch(`api/public/p/${encodeURIComponent(slotCode)}/park`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  });
+  // 성공은 201(PARKED) 또는 200(SUPERSEDED|RE_REGISTERED) — res.ok로 둘 다 안전하게 포함한다.
+  if (!res.ok) return throwOnError(res);
+  const body: { data: RecordRegisterResult } = await res.json();
   return body.data;
 }
