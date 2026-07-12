@@ -15,6 +15,8 @@ const NEW_ZONE_PARAM = 'new';
 /**
  * 구획 상세(생성/편집) 오케스트레이터 — `zid==='new'`는 생성 폼, 그 외는 목록에서 구획을 찾아
  * 편집 폼 + 자리 타이틀 테이블 + QR 그리드를 함께 보여준다(단건 GET endpoint가 없어 목록에서 find).
+ * 최상위 `<div>`(`EventConsoleShell`이 이미 `<main>`을 보유하고 있어 여기서 또 `<main>`을 두면
+ * 랜드마크가 중복되고 셸의 `p-6`과 겹쳐 여백이 두 배가 된다 — `RosterClient` 패턴을 그대로 따른다).
  */
 export function ZoneDetailClient({ eid, zid }: ZoneDetailClientProps) {
   const isNew = zid === NEW_ZONE_PARAM;
@@ -22,7 +24,7 @@ export function ZoneDetailClient({ eid, zid }: ZoneDetailClientProps) {
   const zone = !isNew ? (zones?.find((z) => z.id === zid) ?? null) : null;
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-6 bg-surface-sunken p-6">
+    <div className="flex flex-col gap-6">
       <h1 className="text-desk-lg font-semibold text-ink">{isNew ? '새 구획 추가' : '구획 편집'}</h1>
 
       {isNew && <ZoneForm eid={eid} />}
@@ -37,6 +39,6 @@ export function ZoneDetailClient({ eid, zid }: ZoneDetailClientProps) {
           <SlotQrGrid eid={eid} zone={zone} />
         </>
       )}
-    </main>
+    </div>
   );
 }

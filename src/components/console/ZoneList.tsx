@@ -7,12 +7,16 @@ interface ZoneListProps {
   eid: string;
 }
 
-/** 구획 목록 — 각 행에서 상세(편집/자리 타이틀/QR)로 진입한다. */
+/**
+ * 구획 목록 — 각 행에서 상세(편집/자리 타이틀/QR)로 진입한다. 최상위 `<div>`(`EventConsoleShell`이
+ * 이미 `<main>`을 보유하고 있어 여기서 또 `<main>`을 두면 랜드마크가 중복되고 셸의 `p-6`과
+ * 겹쳐 여백이 두 배가 된다 — `RosterClient` 패턴을 그대로 따른다).
+ */
 export function ZoneList({ eid }: ZoneListProps) {
   const { data: zones, isLoading, isError } = useZones(eid);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-6 bg-surface-sunken p-6">
+    <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-desk-lg font-semibold text-ink">주차 구획</h1>
         <Link
@@ -50,6 +54,6 @@ export function ZoneList({ eid }: ZoneListProps) {
           ))}
         </ul>
       )}
-    </main>
+    </div>
   );
 }
