@@ -14,14 +14,18 @@ export function OnsiteRegister({ eventCode }: OnsiteRegisterProps) {
   const { data: form, isLoading, error } = useOnsiteForm(eventCode);
 
   if (isLoading) {
-    return <p className="p-6 text-desk text-ink-muted">불러오는 중...</p>;
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-surface p-6">
+        <p className="text-desk text-ink-muted">불러오는 중...</p>
+      </div>
+    );
   }
 
   if (error) {
     // 무효 eventCode는 404 — 개인허브의 무효 token과 코드가 동일해 메시지 파싱 없이 일반화한다.
     if (error instanceof VisitorApiError && error.status === 404) {
       return (
-        <div className="p-6">
+        <div className="min-h-dvh bg-surface p-6">
           <NoticeView title="유효하지 않은 링크입니다" message="행사 안내를 다시 확인해 주세요." />
         </div>
       );
@@ -29,13 +33,13 @@ export function OnsiteRegister({ eventCode }: OnsiteRegisterProps) {
     // 409는 코드가 달라 구분 가능 — 종료 안내를 별도 문구로 노출한다.
     if (error instanceof VisitorApiError && error.status === 409) {
       return (
-        <div className="p-6">
+        <div className="min-h-dvh bg-surface p-6">
           <NoticeView title="종료된 행사입니다" message="현장등록이 마감되었습니다." />
         </div>
       );
     }
     return (
-      <div className="p-6">
+      <div className="min-h-dvh bg-surface p-6">
         <NoticeView title="잠시 후 다시 시도해 주세요" />
       </div>
     );
@@ -44,8 +48,8 @@ export function OnsiteRegister({ eventCode }: OnsiteRegisterProps) {
   if (!form) return null;
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface-sunken p-6">
-      <p className="text-desk-lg font-semibold text-ink">{form.event.name}</p>
+    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface p-6">
+      <p className="text-desk-lg font-extrabold text-ink">{form.event.name}</p>
       <OnsiteRegisterForm eventCode={eventCode} />
     </div>
   );

@@ -51,33 +51,40 @@ export function OnsiteRegisterForm({ eventCode }: OnsiteRegisterFormProps) {
   const isRateLimited = mutation.error instanceof VisitorApiError && mutation.error.status === 429;
   const isFieldError = mutation.error instanceof VisitorApiError && mutation.error.status === 400;
 
+  const fieldLabelClass =
+    'flex items-center justify-between text-[length:var(--fs-label-sm)] uppercase tracking-[var(--ls-label)] text-[var(--faint)]';
+  const requiredInputClass =
+    'min-h-touch rounded-[var(--radius-sharp)] border border-line bg-surface px-3.5 text-desk text-ink';
+  const optionalInputClass =
+    'min-h-touch rounded-[var(--radius-sharp)] border border-line-soft bg-surface px-3.5 text-desk text-ink';
+
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-3 rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5"
-    >
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">성함</span>
-        <input
-          {...register('name', { required: true })}
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
-        />
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <label className="flex flex-col gap-1.5">
+        <span className={fieldLabelClass}>성함</span>
+        <input {...register('name', { required: true })} className={requiredInputClass} />
       </label>
       {(errors.name || isFieldError) && <p className="text-sm text-danger">성함을 입력하세요.</p>}
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">소속 (선택)</span>
-        <input {...register('org')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+      <label className="flex flex-col gap-1.5">
+        <span className={fieldLabelClass}>
+          소속 <span className="text-[10px] normal-case tracking-normal text-[var(--faint)]">선택</span>
+        </span>
+        <input {...register('org')} className={optionalInputClass} />
       </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">연락처 (선택)</span>
-        <input {...register('phone')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+      <label className="flex flex-col gap-1.5">
+        <span className={fieldLabelClass}>
+          연락처 <span className="text-[10px] normal-case tracking-normal text-[var(--faint)]">선택</span>
+        </span>
+        <input {...register('phone')} className={optionalInputClass} />
       </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">차량번호 (선택)</span>
-        <input {...register('plate')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+      <label className="flex flex-col gap-1.5">
+        <span className={fieldLabelClass}>
+          차량번호 <span className="text-[10px] normal-case tracking-normal text-[var(--faint)]">선택</span>
+        </span>
+        <input {...register('plate')} className={optionalInputClass} />
       </label>
 
       <SubmitButton pending={mutation.isPending}>{mutation.isPending ? '등록 중...' : '현장등록'}</SubmitButton>

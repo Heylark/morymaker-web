@@ -33,7 +33,7 @@ export function ParkCompleteView({ slotCode }: ParkCompleteViewProps) {
 
   if (!result) {
     return (
-      <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface-sunken p-6">
+      <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface p-6">
         <NoticeView title="등록 정보를 찾을 수 없습니다" message="자리 QR을 다시 스캔해 등록해 주세요." />
         <Link
           href={`/p/${slotCode}`}
@@ -46,8 +46,17 @@ export function ParkCompleteView({ slotCode }: ParkCompleteViewProps) {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface-sunken p-6">
-      <p className="text-desk-lg font-semibold text-ink">{result.record.slotDisplay}</p>
+    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface p-6 text-center">
+      <p
+        className="text-[length:var(--fs-display)] font-normal leading-tight [font-family:var(--serif)] [filter:var(--glow-num)]"
+        // background-clip을 Tailwind 유틸리티(bg-clip-text)로 분리하면 [background:...] shorthand가
+        // 별도 규칙으로 생성되어 암묵적으로 background-clip을 border-box로 되돌린다(순서 무관 승리).
+        // 같은 style 선언 하나에 background→background-clip→color를 순서대로 명시해 캐스케이드
+        // 충돌을 원천 차단한다(shared/primitives.css .gold 클래스와 동일 원리).
+        style={{ background: 'var(--gold-grad)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}
+      >
+        {result.record.slotDisplay}
+      </p>
       {result.message && <p className="text-desk text-ink-muted">{result.message}</p>}
       <AltLocationGuide variant="park" />
     </div>

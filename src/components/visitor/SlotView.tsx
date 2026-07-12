@@ -22,20 +22,24 @@ export function SlotView({ slotCode, token }: SlotViewProps) {
   const [occupiedConfirmed, setOccupiedConfirmed] = useState(false);
 
   if (isLoading) {
-    return <p className="p-6 text-desk text-ink-muted">불러오는 중...</p>;
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-surface p-6">
+        <p className="text-desk text-ink-muted">불러오는 중...</p>
+      </div>
+    );
   }
 
   if (error) {
     // 무효 slotCode는 404 — 다른 방문자 공개 화면과 동일 코드라 메시지 파싱 없이 일반화한다(enumeration-safe).
     if (error instanceof VisitorApiError && error.status === 404) {
       return (
-        <div className="p-6">
+        <div className="min-h-dvh bg-surface p-6">
           <NoticeView title="유효하지 않은 자리입니다" message="자리 QR을 다시 확인해 주세요." />
         </div>
       );
     }
     return (
-      <div className="p-6">
+      <div className="min-h-dvh bg-surface p-6">
         <NoticeView title="잠시 후 다시 시도해 주세요" />
       </div>
     );
@@ -45,12 +49,12 @@ export function SlotView({ slotCode, token }: SlotViewProps) {
 
   if (view.viewType === 'OCCUPIED_NOTICE' && !occupiedConfirmed) {
     return (
-      <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface-sunken p-6">
+      <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface p-6">
         <NoticeView title="이미 주차 기록이 있는 자리입니다" message="본인 차량이면 아래에서 등록해 주세요." />
         <button
           type="button"
           onClick={() => setOccupiedConfirmed(true)}
-          className="min-h-touch rounded-card bg-primary px-6 text-desk font-semibold text-primary-ink"
+          className="min-h-touch flex items-center justify-center rounded-[var(--radius-sharp)] border border-line bg-transparent px-6 text-desk font-bold tracking-[var(--ls-cta)] text-primary"
         >
           그래도 제 차 등록
         </button>
@@ -59,7 +63,7 @@ export function SlotView({ slotCode, token }: SlotViewProps) {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface-sunken p-6">
+    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface p-6">
       <ParkSelfForm
         slotCode={slotCode}
         slot={view.slot}

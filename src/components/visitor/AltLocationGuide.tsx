@@ -14,7 +14,7 @@ export function AltLocationGuide({ variant = 'onsite' }: AltLocationGuideProps) 
       : '행사장 위치는 초대 문자에 첨부된 지도를 참고해 주세요.';
 
   return (
-    <div className="rounded-card bg-surface-sunken p-4 text-center">
+    <div className="mt-auto rounded-[var(--radius-frame)] border border-line-soft bg-surface-sunken p-4 text-center">
       <p className="text-sm text-ink-muted">{message}</p>
     </div>
   );

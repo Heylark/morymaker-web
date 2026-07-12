@@ -37,7 +37,7 @@ export function CompleteView({ eventCode }: CompleteViewProps) {
 
   if (!result) {
     return (
-      <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface-sunken p-6">
+      <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface p-6">
         <NoticeView title="등록 정보를 찾을 수 없습니다" message="현장등록을 다시 진행해 주세요." />
         <Link
           href={`/r/${eventCode}`}
@@ -50,8 +50,8 @@ export function CompleteView({ eventCode }: CompleteViewProps) {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface-sunken p-6">
-      <p className="text-desk-lg font-semibold text-ink">{result.message}</p>
+    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface p-6 text-center">
+      <p className="text-desk-lg font-extrabold text-ink">{result.message}</p>
       <CheckinQrIssue url={result.checkinQr.url} />
       <AltLocationGuide />
     </div>
