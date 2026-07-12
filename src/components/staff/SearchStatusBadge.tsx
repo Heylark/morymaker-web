@@ -1,25 +1,30 @@
+import { StatePill } from '@/components/shared/StatePill';
+
 interface SearchStatusBadgeProps {
   /** 서버가 문자열 그대로 내려주는 검색 상태 — 'ONE' 외 값(예: 'MANY'/'NONE')도 그대로 받는다. */
   searchState: string;
   total: number;
 }
 
+type Tone = 'pending' | 'done' | 'void';
+
 /**
- * 검색 3상태 배지 — 주차 상태(빈자리/주차중/확인필요)와 동일 의미색 토큰을 공유한다:
- * ONE(1건)=state-active, MANY(다건)=state-review, NONE(없음)=state-empty. 색+텍스트 이중 표기로
- * 색맹 대비를 확보한다(색 단독 표시 금지).
+ * 검색 3상태 배지 — 주차 상태(빈자리/주차중/확인필요)와 동일 의미 톤을 공유한다:
+ * ONE(1건)=state-active→done(ivory), MANY(다건)=state-review→void(faint), NONE(없음)=state-empty→pending(champagne,
+ * 기본 톤). 3색 팔레트가 톤 3단계로 전환되어도 색+텍스트 이중 표기 원칙(색맹 대비)은 라벨 문구로 유지한다.
  */
-const PRESETS: Record<string, { text: string; colorClass: string }> = {
-  ONE: { text: '1건', colorClass: 'bg-state-active/10 text-state-active' },
-  MANY: { text: '다건', colorClass: 'bg-state-review/10 text-state-review' },
-  NONE: { text: '없음', colorClass: 'bg-state-empty/10 text-state-empty' },
+const PRESETS: Record<string, { text: string; tone: Tone }> = {
+  ONE: { text: '1건', tone: 'done' },
+  MANY: { text: '다건', tone: 'void' },
+  NONE: { text: '없음', tone: 'pending' },
 };
 
 export function SearchStatusBadge({ searchState, total }: SearchStatusBadgeProps) {
-  const preset = PRESETS[searchState] ?? { text: searchState, colorClass: 'bg-ink-muted/10 text-ink-muted' };
+  // 서버가 미리보기 3종 외 값을 내려주는 경우: void(faint) 톤이 가장 가까운 저강조 표현이라 대체 사용
+  const preset = PRESETS[searchState] ?? { text: searchState, tone: 'void' as const };
   return (
-    <span className={`inline-flex w-fit items-center gap-1 rounded-full px-3 py-1 text-sm font-medium ${preset.colorClass}`}>
+    <StatePill tone={preset.tone}>
       {preset.text} · {total}건
-    </span>
+    </StatePill>
   );
 }

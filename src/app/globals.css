@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* 공유 primitives 클래스 층(버튼·배지·라벨·row·상태칩·QR 발광 박스·금선 프레임) —
+   컴포넌트별 .tsx 래퍼가 이 클래스들을 소비한다(src/components/shared/*.tsx 참조). */
+@import "../components/shared/primitives.css";
+
 /* Pretendard Variable — 한글 본문 + UI + 라틴 레이블 겸용. 패키지가 자체 제공하는 동적
    유니코드 서브셋 분할본을 그대로 사용한다(문자 조합에 따라 필요한 조각만 내려받는다).
    family 이름이 아래 --kr 스택과 정확히 일치해야 실제로 적용된다. */
