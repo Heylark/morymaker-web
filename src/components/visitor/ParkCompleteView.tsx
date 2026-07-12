@@ -33,7 +33,7 @@ export function ParkCompleteView({ slotCode }: ParkCompleteViewProps) {
 
   if (!result) {
     return (
-      <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface-sunken p-6">
+      <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface p-6">
         <NoticeView title="등록 정보를 찾을 수 없습니다" message="자리 QR을 다시 스캔해 등록해 주세요." />
         <Link
           href={`/p/${slotCode}`}
@@ -46,8 +46,10 @@ export function ParkCompleteView({ slotCode }: ParkCompleteViewProps) {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface-sunken p-6">
-      <p className="text-desk-lg font-semibold text-ink">{result.record.slotDisplay}</p>
+    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface p-6 text-center">
+      <p className="text-[length:var(--fs-display)] font-normal leading-tight [background:var(--gold-grad)] bg-clip-text text-transparent [font-family:var(--serif)] [filter:var(--glow-num)]">
+        {result.record.slotDisplay}
+      </p>
       {result.message && <p className="text-desk text-ink-muted">{result.message}</p>}
       <AltLocationGuide variant="park" />
     </div>
