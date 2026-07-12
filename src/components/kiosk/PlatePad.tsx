@@ -37,7 +37,10 @@ export function PlatePad({ onSubmit, pending = false }: PlatePadProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col items-center gap-6">
-      <p className="text-desk-lg font-semibold tracking-[0.5em] text-ink" aria-live="polite">
+      <p
+        className="font-[var(--serif)] text-[22px] tracking-[0.3em] indent-[0.3em] text-center text-primary"
+        aria-live="polite"
+      >
         {value.padEnd(4, '_')}
       </p>
       <div className="grid grid-cols-3 gap-3">
@@ -46,7 +49,7 @@ export function PlatePad({ onSubmit, pending = false }: PlatePadProps) {
             key={key}
             type="button"
             onClick={() => handleKey(key)}
-            className="min-h-touch w-20 rounded-card bg-surface text-desk-lg font-semibold text-ink shadow-sm ring-1 ring-black/5"
+            className="min-h-touch w-20 rounded-card bg-surface text-desk-lg font-semibold text-ink shadow-sm ring-1 ring-line"
           >
             {key}
           </button>

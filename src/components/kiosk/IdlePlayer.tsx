@@ -29,6 +29,9 @@ function IdleContentBody({ content }: { content: IdleContent }) {
  * 대기화면 — idle-contents 소비(브랜딩 색 없이 디자인 토큰 기본색 사용 / 미디어는 1차 null
  * 방어 / eid 사전 유효성 게이트 없음 — 항상 렌더되고, 최초 액션의 404가 무효 eid를 대체
  * 처리한다). 터치 시 onTouch(메뉴 전이·전체화면 요청은 호출부 책임).
+ *
+ * 기본 문구(미디어 없음) 워드마크는 세리프 + 골드 그라데이션 텍스트 클립으로 각인한다 —
+ * 필터 발광은 쓰지 않는다(이 화면은 장식 발광 예산 0, 행동을 요구하지 않는 대기 화면).
  */
 export function IdlePlayer({ eid, onTouch }: IdlePlayerProps) {
   const { data: contents } = useKioskIdleContents(eid);
@@ -43,9 +46,11 @@ export function IdlePlayer({ eid, onTouch }: IdlePlayerProps) {
       {first ? (
         <IdleContentBody content={first} />
       ) : (
-        <p className="text-desk-lg font-semibold text-ink">행사에 오신 것을 환영합니다</p>
+        <p className="text-center font-[var(--serif)] text-[length:clamp(22px,3.6vw,40px)] leading-[1.25] bg-[image:var(--gold-grad)] bg-clip-text text-transparent">
+          행사에 오신 것을 환영합니다
+        </p>
       )}
-      <p className="text-desk text-ink-muted">화면을 터치하세요</p>
+      <p className="text-[13px] tracking-[0.2em] text-ink-muted">화면을 터치하세요</p>
     </button>
   );
 }

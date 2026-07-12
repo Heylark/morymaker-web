@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useKioskNameSearch } from '@/hooks/useKioskNameSearch';
 import { NoticeView } from '@/components/visitor/NoticeView';
+import { StatePill } from '@/components/shared/StatePill';
 import { KioskApiError } from '@/lib/api/kiosk';
 import { MIN_NAME_LENGTH } from '@/lib/kiosk/constants';
 import type { PublicAttendee } from '@/types/kiosk';
@@ -37,7 +38,7 @@ export function NameSearch({ eid, onSelect }: NameSearchProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="이름"
-          className="min-h-touch rounded-card border border-black/10 bg-surface px-4 text-desk-lg text-ink"
+          className="min-h-touch rounded-card border border-line bg-surface px-4 text-desk-lg text-ink"
         />
       </label>
 
@@ -59,6 +60,17 @@ export function NameSearch({ eid, onSelect }: NameSearchProps) {
 
       {isOtherError && <NoticeView title="처리 중 오류가 발생했습니다" />}
 
+      {!isRateLimited && !isNotFound && !isEventClosed && !isOtherError && data && (
+        <div className="flex items-center justify-between">
+          <span className="font-[var(--sans-lat)] text-[9px] uppercase tracking-[0.1em] text-[var(--faint)]">
+            검색 결과
+          </span>
+          <StatePill tone={data.searchState === 'NONE' ? 'void' : 'pending'}>
+            {data.searchState === 'MANY' ? `다건 · ${data.total}건` : data.searchState === 'NONE' ? '없음' : '1건'}
+          </StatePill>
+        </div>
+      )}
+
       {!isRateLimited && !isNotFound && !isEventClosed && !isOtherError && data?.searchState === 'NONE' && (
         <NoticeView title="명단에 없습니다" message="현장등록 또는 직원에게 문의해 주세요." />
       )}
@@ -70,7 +82,7 @@ export function NameSearch({ eid, onSelect }: NameSearchProps) {
               <button
                 type="button"
                 onClick={() => onSelect(attendee)}
-                className="min-h-touch w-full rounded-card bg-surface px-4 text-left text-desk-lg text-ink shadow-sm ring-1 ring-black/5"
+                className="min-h-touch w-full rounded-card bg-surface px-4 text-left text-desk-lg text-ink shadow-sm ring-1 ring-line"
               >
                 {attendee.name}
                 {attendee.org && <span className="text-desk text-ink-muted"> · {attendee.org}</span>}

@@ -56,7 +56,7 @@ export function PlateSearch({ eid, onSelect }: PlateSearchProps) {
               <button
                 type="button"
                 onClick={() => onSelect(record)}
-                className="min-h-touch w-full rounded-card bg-surface px-4 text-left text-desk-lg text-ink shadow-sm ring-1 ring-black/5"
+                className="min-h-touch w-full rounded-card bg-surface px-4 text-left text-desk-lg text-ink shadow-sm ring-1 ring-line"
               >
                 {record.plate}
               </button>
