@@ -9,10 +9,6 @@
 
 // ── 공통 래퍼 ────────────────────────────────────────────────────────────────
 
-export interface ApiData<T> {
-  data: T;
-}
-
 export interface KioskListResponse<T> {
   data: T[];
   meta?: KioskMeta;
