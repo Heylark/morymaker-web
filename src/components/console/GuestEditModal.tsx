@@ -21,7 +21,7 @@ interface GuestEditModalProps {
   onClose: () => void;
 }
 
-function toFormValues(guest?: GuestResponse): GuestFormValues {
+export function toFormValues(guest?: GuestResponse): GuestFormValues {
   return {
     name: guest?.name ?? '',
     org: guest?.org ?? '',
@@ -35,6 +35,12 @@ function toFormValues(guest?: GuestResponse): GuestFormValues {
  * 개별 등록/수정 폼 — EventForm/ZoneForm 폼 골격을 계승하되 헤어라인은 신규 코드 원칙대로
  * `border-line`을 사용한다(§7-b-1 — 구파일 `border-black/N` 복붙 금지). `status`·`seatGroupId`는
  * 타입에 없어 이 폼에 애초에 렌더할 수 없다(체크인 취소는 §5-3 별도 범위, 좌석은 좌석 SSOT REQ 범위).
+ *
+ * 이 모달은 `RosterTable`에 항상 마운트된 채(`open`으로 표시만 토글) 유지된다 — 마운트 시점
+ * 1회만 반영되는 `defaultValues`만으로는 편집 대상이 바뀌어도 폼이 갱신되지 않는다(빈 폼으로
+ * 열리는 버그). `values` 옵션은 매 렌더 `guest`가 바뀔 때마다(react-hook-form 내부 deep-equal
+ * 비교) 폼을 동기화하므로 편집 오픈 시 현재 값이 채워지고, 개별 등록("new")으로 되돌아가면
+ * 다시 빈 값으로 리셋된다.
  */
 export function GuestEditModal({ eid, open, guest, onClose }: GuestEditModalProps) {
   const {
@@ -42,7 +48,10 @@ export function GuestEditModal({ eid, open, guest, onClose }: GuestEditModalProp
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<GuestFormValues>({ defaultValues: toFormValues(guest) });
+  } = useForm<GuestFormValues>({
+    defaultValues: toFormValues(guest),
+    values: toFormValues(guest),
+  });
   const createMutation = useCreateGuest(eid);
   const updateMutation = useUpdateGuest(eid);
   const pending = createMutation.isPending || updateMutation.isPending;
