@@ -18,7 +18,7 @@ export function CheckoutPanel({
   clearReviewPending,
 }: CheckoutPanelProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5">
+    <div className="flex flex-col gap-3 rounded-card bg-surface p-4 shadow-sm ring-1 ring-line-soft">
       <p className="text-desk font-semibold text-ink">{record.plate}</p>
       {record.vipName && <p className="text-sm text-ink-muted">성함: {record.vipName}</p>}
       <p className="text-sm text-ink-muted">상태: {record.status}</p>

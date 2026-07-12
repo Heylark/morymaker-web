@@ -12,13 +12,13 @@ interface ManualLocationInputProps {
  */
 export function ManualLocationInput({ zoneIdRegister, slotSigRegister }: ManualLocationInputProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-card bg-surface p-4 ring-1 ring-black/5">
+    <div className="flex flex-col gap-3 rounded-card bg-surface p-4 ring-1 ring-line-soft">
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">구획 ID</span>
         <input
           {...zoneIdRegister}
           placeholder="예: z1"
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+          className="min-h-touch rounded-card border border-line px-4 text-desk"
         />
       </label>
       <label className="flex flex-col gap-1">
@@ -26,7 +26,7 @@ export function ManualLocationInput({ zoneIdRegister, slotSigRegister }: ManualL
         <input
           {...slotSigRegister}
           placeholder="지하 2층·A구역·3"
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+          className="min-h-touch rounded-card border border-line px-4 text-desk"
         />
       </label>
     </div>

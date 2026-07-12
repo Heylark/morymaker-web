@@ -11,7 +11,7 @@ export function PlateSearch({ value, onChange }: PlateSearchProps) {
       onChange={(e) => onChange(e.target.value)}
       placeholder="차량 뒷자리 4자리"
       inputMode="numeric"
-      className="min-h-touch rounded-card border border-black/10 bg-surface px-4 text-desk text-ink"
+      className="min-h-touch rounded-card border border-line bg-surface px-4 text-desk text-ink"
     />
   );
 }

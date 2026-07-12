@@ -25,7 +25,7 @@ export default function StaffHomePage() {
           <Link
             key={item.href}
             href={item.href}
-            className="flex min-h-touch flex-col justify-center gap-1 rounded-card bg-surface p-5 shadow-sm ring-1 ring-black/5"
+            className="flex min-h-touch flex-col justify-center gap-1 rounded-card bg-surface p-5 shadow-sm ring-1 ring-line-soft"
           >
             <span className="text-desk font-semibold text-primary">{item.label}</span>
             <span className="text-sm text-ink-muted">{item.description}</span>

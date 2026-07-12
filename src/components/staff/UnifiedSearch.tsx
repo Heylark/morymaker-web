@@ -23,7 +23,7 @@ export function UnifiedSearch({ onSearch, placeholder = '이름 또는 차량번
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
-        className="min-h-touch flex-1 rounded-card border border-black/10 bg-surface px-4 text-desk text-ink"
+        className="min-h-touch flex-1 rounded-card border border-line bg-surface px-4 text-desk text-ink"
       />
       <button
         type="submit"

@@ -33,7 +33,7 @@ export default function StaffSearchPage() {
           ) : (
             <ul className="flex flex-col gap-3">
               {data.data.map((item) => (
-                <li key={item.guestId} className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5">
+                <li key={item.guestId} className="rounded-card bg-surface p-4 shadow-sm ring-1 ring-line-soft">
                   <p className="text-desk font-semibold text-ink">
                     {item.name} <span className="text-sm font-normal text-ink-muted">{item.org ?? '-'}</span>
                   </p>
