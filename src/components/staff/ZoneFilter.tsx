@@ -22,7 +22,7 @@ export function ZoneFilter({ zones, selected, onSelect }: ZoneFilterProps) {
         type="button"
         onClick={() => onSelect(null)}
         className={`min-h-touch rounded-card px-4 text-sm font-medium ${
-          selected === null ? 'bg-primary text-primary-ink' : 'bg-surface text-ink ring-1 ring-black/10'
+          selected === null ? 'bg-primary text-primary-ink' : 'bg-surface text-ink ring-1 ring-line'
         }`}
       >
         전체
@@ -33,7 +33,7 @@ export function ZoneFilter({ zones, selected, onSelect }: ZoneFilterProps) {
           type="button"
           onClick={() => onSelect(zone.zoneId)}
           className={`min-h-touch rounded-card px-4 text-sm font-medium ${
-            selected === zone.zoneId ? 'bg-primary text-primary-ink' : 'bg-surface text-ink ring-1 ring-black/10'
+            selected === zone.zoneId ? 'bg-primary text-primary-ink' : 'bg-surface text-ink ring-1 ring-line'
           }`}
         >
           {zone.label} ({zone.count})

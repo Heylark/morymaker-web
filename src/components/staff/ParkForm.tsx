@@ -43,19 +43,19 @@ export function ParkForm({ onSubmit, pending }: ParkFormProps) {
         <span className="text-sm text-ink-muted">차량번호</span>
         <input
           {...register('plate', { required: true })}
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+          className="min-h-touch rounded-card border border-line px-4 text-desk"
         />
       </label>
       {errors.plate && <p className="text-sm text-danger">차량번호를 입력하세요.</p>}
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">연락처 (선택)</span>
-        <input {...register('phone')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+        <input {...register('phone')} className="min-h-touch rounded-card border border-line px-4 text-desk" />
       </label>
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">성함 (선택)</span>
-        <input {...register('vipName')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+        <input {...register('vipName')} className="min-h-touch rounded-card border border-line px-4 text-desk" />
       </label>
 
       <button
