@@ -12,8 +12,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
-      <body>
+    <html lang="ko" data-theme="dark">
+      <body className="bg-[var(--void)] font-[var(--kr)] text-[var(--ivory)]">
         <Providers>{children}</Providers>
       </body>
     </html>
