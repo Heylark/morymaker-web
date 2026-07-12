@@ -2,6 +2,7 @@
 
 import { useKioskCheckin } from '@/hooks/useKioskCheckin';
 import { NoticeView } from '@/components/visitor/NoticeView';
+import { Button } from '@/components/shared/Button';
 import { KioskApiError } from '@/lib/api/kiosk';
 import type { KioskCheckinResult, PublicAttendee } from '@/types/kiosk';
 
@@ -31,22 +32,25 @@ export function IdentityConfirm({ eid, attendee, onConfirmed, onReject }: Identi
       <p className="text-desk text-ink-muted">본인이 맞으신가요?</p>
 
       <div className="flex w-full gap-4">
-        <button
+        <Button
+          variant="ghost"
           type="button"
           onClick={onReject}
           disabled={mutation.isPending}
-          className="min-h-touch flex-1 rounded-card bg-surface text-desk-lg font-semibold text-ink shadow-sm ring-1 ring-black/5 disabled:opacity-50"
+          className="min-h-touch flex-1 disabled:opacity-50"
         >
           아니에요
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="gold"
+          glow
           type="button"
           onClick={handleConfirm}
           disabled={mutation.isPending}
-          className="min-h-touch flex-1 rounded-card bg-primary text-desk-lg font-semibold text-primary-ink disabled:opacity-50"
+          className="min-h-touch flex-1 disabled:opacity-50"
         >
           {mutation.isPending ? '확인 중...' : '맞아요'}
-        </button>
+        </Button>
       </div>
 
       {isRateLimited && <NoticeView title="잠시 후 다시 시도해 주세요" />}
