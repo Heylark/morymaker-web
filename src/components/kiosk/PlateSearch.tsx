@@ -24,6 +24,9 @@ export function PlateSearch({ eid, onSelect }: PlateSearchProps) {
   const isRateLimited = error instanceof KioskApiError && error.status === 429;
   // eid 사전 게이트 대신 최초 액션(주차검색)의 404를 무효 행사 안내로 대체한다.
   const isNotFound = error instanceof KioskApiError && error.status === 404;
+  const isEventClosed = error instanceof KioskApiError && error.status === 409;
+  // 위 세 분기 외 에러는 IdentityConfirm과 동일한 일반 안내로 흡수한다(무피드백 공백 방지).
+  const isOtherError = Boolean(error) && !isRateLimited && !isNotFound && !isEventClosed;
   const searched = data !== undefined;
 
   return (
@@ -36,11 +39,17 @@ export function PlateSearch({ eid, onSelect }: PlateSearchProps) {
         <NoticeView title="행사를 찾을 수 없습니다" message="키오스크 관리자에게 문의해 주세요." />
       )}
 
-      {!isRateLimited && !isNotFound && searched && data.length === 0 && (
+      {!isRateLimited && !isNotFound && isEventClosed && (
+        <NoticeView title="종료된 행사입니다" message="키오스크 관리자에게 문의해 주세요." />
+      )}
+
+      {isOtherError && <NoticeView title="처리 중 오류가 발생했습니다" />}
+
+      {!isRateLimited && !isNotFound && !isEventClosed && !isOtherError && searched && data.length === 0 && (
         <NoticeView title="등록된 차량이 없습니다" message="현장등록 또는 직원에게 문의해 주세요." />
       )}
 
-      {!isRateLimited && !isNotFound && searched && data.length > 0 && (
+      {!isRateLimited && !isNotFound && !isEventClosed && !isOtherError && searched && data.length > 0 && (
         <ul className="flex w-full flex-col gap-2">
           {data.map((record, index) => (
             <li key={`${record.plate}-${index}`}>
