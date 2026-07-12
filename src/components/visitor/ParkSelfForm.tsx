@@ -51,23 +51,24 @@ export function ParkSelfForm({ slotCode, slot, occupied, token }: ParkSelfFormPr
   const isFieldError = mutation.error instanceof VisitorApiError && mutation.error.status === 400;
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-3 rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5"
-    >
-      <SlotAutoLabel fullName={`이 자리: ${slot.display}`} />
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <div className="rounded-[var(--radius-frame)] border border-line-soft bg-surface-sunken px-3.5 py-3">
+        <SlotAutoLabel fullName={`이 자리: ${slot.display}`} />
+      </div>
 
       {occupied && (
-        <p className="rounded-card bg-surface-sunken p-3 text-sm text-ink-muted">
+        <p className="rounded-[var(--radius-frame)] border border-line bg-[var(--card-hi)] px-3.5 py-3 text-xs text-ink-muted">
           기존 등록은 자동 출차 처리되고 현장 요원이 확인합니다.
         </p>
       )}
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-ink-muted">차량번호</span>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[length:var(--fs-label-sm)] uppercase tracking-[var(--ls-label)] text-[var(--faint)]">
+          차량번호
+        </span>
         <input
           {...register('plate', { required: true })}
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+          className="min-h-touch rounded-[var(--radius-sharp)] border border-line-soft bg-surface px-3.5 text-desk text-ink"
         />
       </label>
       {(errors.plate || isFieldError) && <p className="text-sm text-danger">차량번호를 입력하세요.</p>}
