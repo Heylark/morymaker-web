@@ -61,7 +61,9 @@ test.describe('콘솔 셸 — 모바일(375px) 반응형 회귀', () => {
     await expect(page.getByRole('link', { name: '← 행사 목록' })).toBeHidden();
 
     // 8열 표는 375px에서 가로 스와이프를 강제해 카드 리스트(hidden md:block ↔ md:hidden)로 대체됐다.
-    await expect(page.locator('table')).toBeHidden();
+    // 같은 화면에 무관한 발송 이력 표(SmsLogView)가 별도로 존재해 'table' 태그만으로는 특정이
+    // 안 되므로, 명단 표 고유 헤더("이름")로 필터해 좁힌다.
+    await expect(page.locator('table').filter({ hasText: '이름' })).toBeHidden();
     const cardList = page.getByRole('list', { name: '참석자 목록' });
     await expect(cardList).toBeVisible();
     const firstCard = cardList.getByRole('listitem').first();
@@ -93,7 +95,8 @@ test.describe('콘솔 셸 — 모바일(375px) 반응형 회귀', () => {
     await expect(page.getByRole('navigation', { name: '주요 메뉴' })).toBeHidden();
 
     // md 이상에서는 카드 리스트 대신 기존 8열 표로 회귀돼야 한다.
-    await expect(page.locator('table')).toBeVisible();
+    // 동일 이유로 명단 표 고유 헤더("이름")로 필터해 발송 이력 표와 구분한다.
+    await expect(page.locator('table').filter({ hasText: '이름' })).toBeVisible();
     await expect(page.getByRole('list', { name: '참석자 목록' })).toBeHidden();
 
     await shot(page, 'desktop-roster-after-mobile');
