@@ -10,8 +10,8 @@ interface NoticeViewProps {
  */
 export function NoticeView({ title, message }: NoticeViewProps) {
   return (
-    <div className="flex flex-col items-center gap-2 rounded-card bg-surface p-8 text-center shadow-sm ring-1 ring-black/5">
-      <p className="text-desk-lg font-semibold text-ink">{title}</p>
+    <div className="flex flex-col items-center gap-2 rounded-[var(--radius-frame)] border border-line-soft bg-surface-sunken p-8 text-center">
+      <p className="text-desk-lg font-extrabold text-ink">{title}</p>
       {message && <p className="text-desk text-ink-muted">{message}</p>}
     </div>
   );
