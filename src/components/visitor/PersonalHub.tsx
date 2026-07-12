@@ -17,20 +17,24 @@ export function PersonalHub({ token }: PersonalHubProps) {
   const { data: hub, isLoading, error } = useHub(token);
 
   if (isLoading) {
-    return <p className="p-6 text-desk text-ink-muted">불러오는 중...</p>;
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-surface p-6">
+        <p className="text-desk text-ink-muted">불러오는 중...</p>
+      </div>
+    );
   }
 
   if (error) {
     // 무효 token은 404 — 현장등록의 무효 eventCode와 코드가 동일해 메시지 파싱 없이 일반화한다.
     if (error instanceof VisitorApiError && error.status === 404) {
       return (
-        <div className="p-6">
+        <div className="min-h-dvh bg-surface p-6">
           <NoticeView title="유효하지 않은 링크입니다" message="초대 문자에 포함된 링크를 다시 확인해 주세요." />
         </div>
       );
     }
     return (
-      <div className="p-6">
+      <div className="min-h-dvh bg-surface p-6">
         <NoticeView title="잠시 후 다시 시도해 주세요" />
       </div>
     );
@@ -39,7 +43,7 @@ export function PersonalHub({ token }: PersonalHubProps) {
   if (!hub) return null;
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface-sunken p-6">
+    <div className="mx-auto flex min-h-dvh max-w-xl flex-col gap-4 bg-surface p-6">
       <InviteCard hub={hub} />
       <CheckinQr url={hub.checkinQr.url} />
       <PlatePreregForm token={token} prereg={hub.prereg} />

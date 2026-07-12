@@ -4,9 +4,5 @@
  * 안내문구로 대체한다. VIS-01 도입 시 실 버튼으로 교체한다.
  */
 export function ParkEntryNotice() {
-  return (
-    <div className="rounded-card bg-surface-sunken p-4 text-center">
-      <p className="text-sm text-ink-muted">주차 안내는 현장 안내데스크에서 도와드립니다.</p>
-    </div>
-  );
+  return <p className="mt-2 text-center text-xs text-ink-muted">주차 안내는 현장 안내데스크에서 도와드립니다.</p>;
 }
