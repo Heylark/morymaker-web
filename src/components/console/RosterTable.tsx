@@ -113,56 +113,106 @@ export function RosterTable({ eid }: RosterTableProps) {
       {data && data.items.length === 0 && <p className="text-ink-muted">등록된 참석자가 없습니다.</p>}
 
       {data && data.items.length > 0 && (
-        <div className="overflow-x-auto rounded-card border border-line-soft bg-surface">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-line-soft text-ink-muted">
-                <th className="px-4 py-3 font-medium">이름</th>
-                <th className="px-4 py-3 font-medium">소속/직함</th>
-                <th className="px-4 py-3 font-medium">연락처</th>
-                <th className="px-4 py-3 font-medium">차량번호</th>
-                <th className="px-4 py-3 font-medium">좌석</th>
-                <th className="px-4 py-3 font-medium">상태</th>
-                <th className="px-4 py-3 font-medium">출처</th>
-                <th className="px-4 py-3 font-medium">액션</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map((guest) => (
-                <tr key={guest.id} className="border-b border-line-soft last:border-0">
-                  <td className="px-4 py-3 text-ink">{guest.name}</td>
-                  <td className="px-4 py-3 text-ink-muted">
-                    {[guest.org, guest.title].filter(Boolean).join(' · ') || '-'}
-                  </td>
-                  {/* 비마스킹 기본값(CP-1 ③) — 원문 그대로 노출 */}
-                  <td className="px-4 py-3 text-ink-muted">{guest.phone ?? '-'}</td>
-                  <td className="px-4 py-3 text-ink-muted">{guest.plate ?? '-'}</td>
-                  <td className="px-4 py-3 text-ink-muted">{seatLabelDisplay(guest.seatLabel)}</td>
-                  <td className="px-4 py-3">
-                    <StatePill tone={guestStatusTone(guest.status)}>{guest.status}</StatePill>
-                  </td>
-                  <td className="px-4 py-3 text-ink-muted">{guest.src}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-3">
-                      <button type="button" onClick={() => setEditTarget(guest)} className="text-primary hover:underline">
-                        수정
-                      </button>
-                      {guest.status !== '취소' && (
-                        <button
-                          type="button"
-                          onClick={() => setCancelTarget(guest)}
-                          className="text-danger hover:underline"
-                        >
-                          제외
-                        </button>
-                      )}
-                    </div>
-                  </td>
+        <>
+          {/* 데스크톱(md 이상) — 기존 8열 표. 375px에서는 가로 스와이프가 강제돼 아래 카드형으로 대체 */}
+          <div className="hidden overflow-x-auto rounded-card border border-line-soft bg-surface md:block">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-line-soft text-ink-muted">
+                  <th className="px-4 py-3 font-medium">이름</th>
+                  <th className="px-4 py-3 font-medium">소속/직함</th>
+                  <th className="px-4 py-3 font-medium">연락처</th>
+                  <th className="px-4 py-3 font-medium">차량번호</th>
+                  <th className="px-4 py-3 font-medium">좌석</th>
+                  <th className="px-4 py-3 font-medium">상태</th>
+                  <th className="px-4 py-3 font-medium">출처</th>
+                  <th className="px-4 py-3 font-medium">액션</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {data.items.map((guest) => (
+                  <tr key={guest.id} className="border-b border-line-soft last:border-0">
+                    <td className="px-4 py-3 text-ink">{guest.name}</td>
+                    <td className="px-4 py-3 text-ink-muted">
+                      {[guest.org, guest.title].filter(Boolean).join(' · ') || '-'}
+                    </td>
+                    {/* 비마스킹 기본값(CP-1 ③) — 원문 그대로 노출 */}
+                    <td className="px-4 py-3 text-ink-muted">{guest.phone ?? '-'}</td>
+                    <td className="px-4 py-3 text-ink-muted">{guest.plate ?? '-'}</td>
+                    <td className="px-4 py-3 text-ink-muted">{seatLabelDisplay(guest.seatLabel)}</td>
+                    <td className="px-4 py-3">
+                      <StatePill tone={guestStatusTone(guest.status)}>{guest.status}</StatePill>
+                    </td>
+                    <td className="px-4 py-3 text-ink-muted">{guest.src}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-3">
+                        <button type="button" onClick={() => setEditTarget(guest)} className="text-primary hover:underline">
+                          수정
+                        </button>
+                        {guest.status !== '취소' && (
+                          <button
+                            type="button"
+                            onClick={() => setCancelTarget(guest)}
+                            className="text-danger hover:underline"
+                          >
+                            제외
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* 모바일(md 미만) — 참석자 1명당 카드 1개. 표와 같은 data.items·핸들러·StatePill 재사용(로직 중복 0) */}
+          <ul aria-label="참석자 목록" className="flex flex-col gap-3 md:hidden">
+            {data.items.map((guest) => (
+              <li key={guest.id} className="rounded-card border border-line-soft bg-surface p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-semibold text-ink">{guest.name}</span>
+                  <StatePill tone={guestStatusTone(guest.status)}>{guest.status}</StatePill>
+                </div>
+                <dl className="mt-3 flex flex-col text-sm">
+                  {/* 연락처는 표와 동일하게 비마스킹 기본값(CP-1 ③) — 원문 그대로 노출 */}
+                  {(
+                    [
+                      ['소속/직함', [guest.org, guest.title].filter(Boolean).join(' · ') || '-'],
+                      ['연락처', guest.phone ?? '-'],
+                      ['차량번호', guest.plate ?? '-'],
+                      ['좌석', seatLabelDisplay(guest.seatLabel)],
+                      ['출처', guest.src],
+                    ] as const
+                  ).map(([label, value]) => (
+                    <div key={label} className="flex justify-between gap-3 border-b border-line-soft py-2 last:border-0">
+                      <dt className="text-ink-muted">{label}</dt>
+                      <dd className="min-w-0 text-right text-ink-muted">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="mt-3 flex gap-4 border-t border-line-soft pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditTarget(guest)}
+                    className="min-h-touch text-primary hover:underline"
+                  >
+                    수정
+                  </button>
+                  {guest.status !== '취소' && (
+                    <button
+                      type="button"
+                      onClick={() => setCancelTarget(guest)}
+                      className="min-h-touch text-danger hover:underline"
+                    >
+                      제외
+                    </button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
       <GuestEditModal

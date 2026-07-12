@@ -12,11 +12,15 @@ import { useRequireAdmin } from '@/hooks/useRequireAdmin';
  * 트리(행사 목록·행사 편집·명단·초대 등 콘솔 전체)를 라이트로 렌더한다. 실행자(staff) 표면의
  * 동일 wrapper 패턴을 그대로 미러링 — 신규 토큰 없이 기존 `[data-theme="light"]` 재매핑
  * 블록만 활성화한다.
+ *
+ * `data-console-scope`는 콘솔 입력 전용 스타일(iOS 자동 확대 방지)의 CSS 선택자 앵커다.
+ * 실행자(staff) 표면도 동일하게 `data-theme="light"`를 쓰므로 그 속성만으로는 콘솔만 골라낼
+ * 수 없어 별도 마커가 필요하다.
  */
 export function ConsoleGateClient({ children }: { children: React.ReactNode }) {
   useRequireAdmin();
   return (
-    <div data-theme="light" className="min-h-dvh bg-[var(--void)] text-[var(--ivory)]">
+    <div data-theme="light" data-console-scope className="min-h-dvh bg-[var(--void)] text-[var(--ivory)]">
       {children}
     </div>
   );
