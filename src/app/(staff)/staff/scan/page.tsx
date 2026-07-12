@@ -48,7 +48,7 @@ export default function ScanHomePage() {
                         `/staff/scan/confirm?guestId=${item.guestId}&name=${encodeURIComponent(item.name)}${orgParam}`,
                       );
                     }}
-                    className="min-h-touch w-full rounded-card bg-surface p-4 text-left shadow-sm ring-1 ring-black/5"
+                    className="min-h-touch w-full rounded-card bg-surface p-4 text-left shadow-sm ring-1 ring-line-soft"
                   >
                     {item.name} — {item.org ?? '-'}
                   </button>

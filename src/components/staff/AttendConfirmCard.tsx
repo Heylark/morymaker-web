@@ -8,7 +8,7 @@ interface AttendConfirmCardProps {
 export function AttendConfirmCard({ result }: AttendConfirmCardProps) {
   const isAlready = result.resultCode === 'ALREADY_CHECKED_IN';
   return (
-    <div className="flex flex-col gap-2 rounded-card bg-surface p-6 text-center shadow-sm ring-1 ring-black/5">
+    <div className="flex flex-col gap-2 rounded-card bg-surface p-6 text-center shadow-sm ring-1 ring-line-soft">
       <p className={`text-sm font-semibold ${isAlready ? 'text-state-review' : 'text-success'}`}>
         {isAlready ? '이미 체크인됨' : '참석 확인 완료'}
       </p>
