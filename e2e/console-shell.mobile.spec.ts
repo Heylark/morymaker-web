@@ -60,6 +60,15 @@ test.describe('콘솔 셸 — 모바일(375px) 반응형 회귀', () => {
     // 사이드바는 md 미만에서 렌더 자체를 숨긴다(hidden md:flex) — 안의 링크도 함께 숨겨진다.
     await expect(page.getByRole('link', { name: '← 행사 목록' })).toBeHidden();
 
+    // 8열 표는 375px에서 가로 스와이프를 강제해 카드 리스트(hidden md:block ↔ md:hidden)로 대체됐다.
+    await expect(page.locator('table')).toBeHidden();
+    const cardList = page.getByRole('list', { name: '참석자 목록' });
+    await expect(cardList).toBeVisible();
+    const firstCard = cardList.getByRole('listitem').first();
+    await expect(firstCard).toBeVisible();
+    await expect(firstCard.locator('.state')).toBeVisible();
+    await expect(firstCard.getByRole('button', { name: '수정' })).toBeVisible();
+
     await shot(page, 'mobile-roster');
   });
 
@@ -82,6 +91,11 @@ test.describe('콘솔 셸 — 모바일(375px) 반응형 회귀', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await expect(page.getByRole('link', { name: '← 행사 목록' })).toBeVisible();
     await expect(page.getByRole('navigation', { name: '주요 메뉴' })).toBeHidden();
+
+    // md 이상에서는 카드 리스트 대신 기존 8열 표로 회귀돼야 한다.
+    await expect(page.locator('table')).toBeVisible();
+    await expect(page.getByRole('list', { name: '참석자 목록' })).toBeHidden();
+
     await shot(page, 'desktop-roster-after-mobile');
   });
 
