@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useZoneSlots } from '@/hooks/useZoneSlots';
 import { SlotAutoLabel } from '@/components/shared/SlotAutoLabel';
+import { QrGlowBox } from '@/components/shared/QrGlowBox';
 import { QrPreview } from './QrPreview';
 import { ZoneQrZipButton } from './ZoneQrZipButton';
 import type { ZoneResponse } from '@/types/console';
@@ -37,7 +38,11 @@ export function SlotQrGrid({ eid, zone }: SlotQrGridProps) {
           {slots.map((slot) => (
             // url은 slot.scanUrl 그대로(서버 조립) — env base + slotCode 문자열 결합 절대 금지
             <div key={slot.slotCode} className="flex flex-col items-center gap-2 rounded-card border border-black/10 p-3">
-              <QrPreview url={slot.scanUrl} size={140} />
+              {/* 그리드에 자리 수만큼 QR이 동시에 나열되므로 발광은 끈다(화면당 발광 예산 1) —
+                  scan성은 QrPreview의 원시 흑백 렌더가 그대로 담당 */}
+              <QrGlowBox glow={false}>
+                <QrPreview url={slot.scanUrl} size={140} />
+              </QrGlowBox>
               <SlotAutoLabel fullName={slot.slotFullName} />
             </div>
           ))}

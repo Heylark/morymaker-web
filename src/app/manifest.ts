@@ -5,6 +5,9 @@ import type { MetadataRoute } from 'next';
  * 홈스크린은 부가 이득이고, 키오스크 전체화면의 1차 주 수단은 Fullscreen API다(`app/(kiosk)/kiosk/[eid]/page.tsx`
  * 참조). manifest는 정적이라 eid별로 나눌 수 없어 `start_url`은 eid 비의존 '/'로 둔다.
  * basePath가 비어 있는 1차는 상대경로가 그대로 안전하다.
+ *
+ * 배경·테마 색상은 globals.css의 최심층 배경 토큰과 값을 맞춘다 — manifest는 정적 파일이라
+ * CSS 변수를 참조할 수 없으므로, 다크 시그니처 배경값이 바뀌면 이 값도 함께 수정할 것.
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -14,8 +17,8 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: '/',
     display: 'standalone',
     orientation: 'portrait',
-    background_color: '#0c1322',
-    theme_color: '#0c1322',
+    background_color: '#08090C',
+    theme_color: '#08090C',
     icons: [{ src: '/icon', sizes: '512x512', type: 'image/png' }],
   };
 }
