@@ -253,3 +253,6 @@ package-lock.json
 
 # mkcert 로컬 HTTPS 인증서 (머신별 생성 — scripts/setup-local-https.sh)
 certs/
+
+# 워크트리 docs 심볼릭 링크 (DOCS_PATH — 컨테이너 공유 docs, git 추적 대상 아님)
+/docs
