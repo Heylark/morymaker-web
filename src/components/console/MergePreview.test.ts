@@ -3,7 +3,7 @@ import { summarizeImportPreview } from './MergePreview';
 
 /**
  * 렌더 없이 카운트 요약 문구 조립 로직만 단위 테스트한다(vitest.config.ts가 jsdom 없이 node
- * 환경만 제공 — PATTERN-020). 실 서버 응답이 항목별 상세를 주지 않아(사실 C) 카운트 요약이
+ * 환경만 제공). 실 서버 프리뷰 응답이 항목별 상세 없이 카운트만 주므로 카운트 요약이
  * 이 컴포넌트의 핵심 산출물이다.
  */
 describe('MergePreview — summarizeImportPreview (카운트 요약 문구)', () => {

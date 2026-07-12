@@ -8,7 +8,7 @@ interface TemplateClientProps {
   eid: string;
 }
 
-/** ADM-12 초대 문자 템플릿 — 최상위 `<div>`(PATTERN-024 재발 방지, RosterClient와 동일 원칙). */
+/** ADM-12 초대 문자 템플릿 — 최상위 `<div>`(셸이 이미 `<main>`을 보유 — 랜드마크 중복 방지, RosterClient와 동일 원칙). */
 export function TemplateClient({ eid }: TemplateClientProps) {
   return (
     <div className="flex flex-col gap-6">

@@ -3,7 +3,7 @@ import { insertTokenAtCursor } from './TokenPalette';
 
 /**
  * 렌더 없이 커서 위치 삽입 로직만 단위 테스트한다(vitest.config.ts가 node 환경만 제공 —
- * PATTERN-020, 실제 textarea DOM 포커스/커서 이동은 이 순수 함수 밖의 관심사).
+ * 실제 textarea DOM 포커스/커서 이동은 이 순수 함수 밖의 관심사).
  */
 describe('TokenPalette — insertTokenAtCursor (커서 위치 토큰 삽입)', () => {
   it('커서 위치에 토큰을 삽입하고 다음 커서를 토큰 뒤로 반환한다', () => {

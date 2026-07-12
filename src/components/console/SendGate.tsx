@@ -10,8 +10,9 @@ interface SendGateProps {
 }
 
 /**
- * 발송 검증 게이트 — [발송] 버튼 활성은 서버 `canSend`에 직결한다(클라 재계산 금지, ADR-003 —
- * 구조적 누락 차단). `appliedTemplate===''`(템플릿 미설정)이면 별도로 추가 비활성 + 안내
+ * 발송 검증 게이트 — [발송] 버튼 활성은 서버 `canSend`에 직결한다(클라 재계산 금지 —
+ * 클라가 blocked를 재판정하면 stale 명단으로 누락자에게 오발송할 수 있어 구조적으로 차단).
+ * `appliedTemplate===''`(템플릿 미설정)이면 별도로 추가 비활성 + 안내
  * 문구를 보여준다(서버 `send`가 이 상태에서 `NoSuchElementException`을 던지므로 UI가 먼저 막는다).
  */
 export function SendGate({ eid }: SendGateProps) {

@@ -4,7 +4,7 @@ import type { SmsLogStatus } from '@/types/sms';
 /**
  * 명단·초대 도메인 상수 — Guest.kt·SmsLog.kt companion 값의 단일 출처(문자열 자체가 이미
  * 한국어 라벨이라 별도 표시용 매핑은 두지 않는다). 필터 옵션 배열과 상태 배지 톤 매핑만
- * 순수 함수로 분리해 렌더 없이 단위 테스트 가능하게 한다(vitest jsdom 부재 — PATTERN-020).
+ * 순수 함수로 분리해 렌더 없이 단위 테스트 가능하게 한다(vitest가 jsdom 없이 node 환경만 제공).
  */
 
 export const GUEST_STATUS_OPTIONS: GuestStatus[] = ['대기', '방문', '참석', '취소'];
@@ -26,7 +26,7 @@ export function smsLogStatusTone(status: SmsLogStatus): PillTone {
 }
 
 /**
- * seatLabel 표시값 — 엑셀 임포트로는 seatGroupId가 채워지지 않아(PATTERN-005) null이 흔하다.
+ * seatLabel 표시값 — 엑셀 임포트로는 seatGroupId가 채워지지 않아 null이 흔하다.
  * 빈 문자열이 아닌 안내 문구로 명시해 "좌석 배정 안 됨"과 "값이 비어 보임"을 구분한다.
  */
 export function seatLabelDisplay(seatLabel: string | null): string {

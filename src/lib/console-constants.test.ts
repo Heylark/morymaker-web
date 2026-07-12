@@ -25,7 +25,7 @@ describe('console-constants — smsLogStatusTone (발송 로그 상태 → 배�
 });
 
 describe('console-constants — seatLabelDisplay (좌석 표시값)', () => {
-  it('null이면 안내 문구로 대체한다(PATTERN-005 — 엑셀 임포트로는 좌석이 채워지지 않음)', () => {
+  it('null이면 안내 문구로 대체한다(엑셀 임포트로는 좌석이 채워지지 않음)', () => {
     expect(seatLabelDisplay(null)).toBe('미배정 (별도 배정)');
   });
   it('값이 있으면 그대로 반환한다', () => {
