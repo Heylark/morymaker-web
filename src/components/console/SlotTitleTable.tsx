@@ -55,7 +55,7 @@ export function SlotTitleTable({ eid, zone }: SlotTitleTableProps) {
   };
 
   return (
-    <section className="flex flex-col gap-4 rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5">
+    <section className="flex flex-col gap-4 rounded-card border border-line-soft bg-surface p-4">
       <h2 className="text-desk font-semibold text-ink">자리 타이틀</h2>
       <table className="w-full text-sm">
         <thead>
@@ -74,7 +74,7 @@ export function SlotTitleTable({ eid, zone }: SlotTitleTableProps) {
                   <input
                     value={titles[key] ?? key}
                     onChange={(e) => setTitles((prev) => ({ ...prev, [key]: e.target.value }))}
-                    className="min-h-touch w-full rounded-card border border-black/10 px-3 text-desk"
+                    className="min-h-touch w-full rounded-card border border-line px-3 text-desk"
                   />
                 </td>
               </tr>

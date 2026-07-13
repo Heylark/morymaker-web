@@ -62,29 +62,29 @@ export function ZoneForm({ eid, zone }: ZoneFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 rounded-card border border-line-soft bg-surface p-4">
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">구분1 (필수)</span>
         <input
           {...register('part1', { required: true })}
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+          className="min-h-touch rounded-card border border-line px-4 text-desk"
         />
       </label>
       {errors.part1 && <p className="text-sm text-danger">구분1을 입력하세요.</p>}
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">구분2 (선택)</span>
-        <input {...register('part2')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+        <input {...register('part2')} className="min-h-touch rounded-card border border-line px-4 text-desk" />
       </label>
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">구분3 (선택)</span>
-        <input {...register('part3')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+        <input {...register('part3')} className="min-h-touch rounded-card border border-line px-4 text-desk" />
       </label>
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">구분4 (선택)</span>
-        <input {...register('part4')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+        <input {...register('part4')} className="min-h-touch rounded-card border border-line px-4 text-desk" />
       </label>
 
       <label className="flex flex-col gap-1">
@@ -92,7 +92,7 @@ export function ZoneForm({ eid, zone }: ZoneFormProps) {
         <input
           type="number"
           {...register('startNo', { required: true, valueAsNumber: true })}
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+          className="min-h-touch rounded-card border border-line px-4 text-desk"
         />
       </label>
 
@@ -101,7 +101,7 @@ export function ZoneForm({ eid, zone }: ZoneFormProps) {
         <input
           type="number"
           {...register('slotCount', { required: true, min: 1, valueAsNumber: true })}
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+          className="min-h-touch rounded-card border border-line px-4 text-desk"
         />
       </label>
       {errors.slotCount && <p className="text-sm text-danger">자리 개수는 1개 이상이어야 합니다.</p>}
