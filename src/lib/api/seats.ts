@@ -14,10 +14,10 @@ const seatAssignmentsBase = (eid: string) => `api/events/${eid}/seat-assignments
 // trailing slash 없음 — next.config에 trailingSlash 미설정(guests.ts 패턴 계승).
 
 /**
- * 배정 교체(PUT)는 원자 교체(deleteByGroup + insertBatch)라 저장 시 그룹의 전체 배정 집합을
- * 항상 전송해야 한다(02-architect ADR-001-보강). 조회도 동일 크기로 전체를 로드해야 부분
- * 집합만 로컬에 쥔 채 저장했을 때 나머지가 삭제되는 사고를 막는다 — guests.ts ROSTER_PAGE_SIZE
- * 를 그대로 계승(VIP 행사 규모 상한 내 단일 페이지 전체 로드, 서버 기본 size=50에 의존 금지).
+ * 배정 교체(PUT)는 기존 배정을 통째로 지우고 새로 넣는 원자 교체라, 저장 시 그룹의 전체 배정
+ * 집합을 항상 전송해야 한다. 조회도 동일 크기로 전체를 로드해야 부분 집합만 로컬에 쥔 채
+ * 저장했을 때 나머지가 삭제되는 사고를 막는다 — guests.ts ROSTER_PAGE_SIZE를 그대로 계승(VIP
+ * 행사 규모 상한 내 단일 페이지 전체 로드, 서버 기본 size=50에 의존 금지).
  */
 export const SEAT_ASSIGN_PAGE_SIZE = 500;
 

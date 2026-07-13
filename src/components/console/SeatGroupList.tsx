@@ -19,7 +19,7 @@ interface SeatGroupListProps {
  * 좌석 그룹 목록 — ZoneList/RosterTable 관용구를 계승하되, 그룹은 상세 페이지가 아니라
  * 모달(SeatGroupForm)로 편집한다(그룹 필드가 라벨+번호지정 토글 2개뿐이라 페이지 이동은
  * 과한 설계). 최상위 `<div>`(상위 SeatsClient가 이미 `<div flex-col gap-6>` — 여기서는
- * 섹션 컨테이너만 두고 `<main>`을 두지 않는다, PATTERN-024 재발 방지).
+ * 섹션 컨테이너만 두고 `<main>`을 두지 않는다: 셸이 이미 `<main>`을 보유하므로 랜드마크 중복 방지).
  */
 export function SeatGroupList({ eid, onAssign }: SeatGroupListProps) {
   const { data: groups, isLoading, isError } = useSeatGroups(eid);

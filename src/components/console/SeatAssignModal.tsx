@@ -16,7 +16,7 @@ interface SeatAssignModalProps {
   onClose: () => void;
 }
 
-/** numbering ON 한 행 — ord는 배열 위치에서 파생(사용자 입력 아님, 02-architect ADR-001). */
+/** numbering ON 한 행 — ord(좌석 번호)는 배열 위치에서 파생하며, 사용자가 직접 입력하지 않는다. */
 export interface AssignRow {
   rowId: string;
   guestId: string | null;
@@ -81,7 +81,8 @@ export function toOffPayload(memberIds: string[]): SeatAssignmentEntryRequest[] 
 /**
  * 후보 명단 필터 — 이미 배정된(excludeIds) 게스트를 제외하고 이름/소속으로 검색한다.
  * "윈도잉"은 페이지 단위 서버 재조회가 아니라 이미 전체 로드된 후보 목록의 표시 필터링을
- * 뜻한다(02-architect ADR-001-보강 — payload 페이징은 데이터 손실 위험이라 배제).
+ * 뜻한다 — 저장은 그룹 배정 전체를 한 번에 교체하므로 payload를 페이지 단위로 나누면 미표시
+ * 배정이 삭제되어 데이터가 손실되기 때문에 페이징 자체를 쓰지 않는다.
  */
 export function filterCandidateGuests(allGuests: GuestResponse[], excludeIds: string[], query: string): GuestResponse[] {
   const excluded = new Set(excludeIds);
@@ -315,9 +316,9 @@ function OffModeEditor({ memberIds, setMemberIds, candidates, nameById, query, s
 
 /**
  * 배정 편집 모달 — GuestEditModal 셸을 그대로 미러링한다(fixed inset-0 ... bg-black/40 +
- * rounded-card border-line-soft bg-surface). react-hook-form 미사용(드래그/선택 인터랙션이라
- * 로컬 state, 02-architect §1). 부모(SeatsClient)가 `assigningGroup`으로 조건부 마운트하므로
- * `open` prop은 받지 않는다.
+ * rounded-card border-line-soft bg-surface). 폼이 아니라 행 이동·선택 인터랙션이라
+ * react-hook-form 대신 로컬 state로 편집한다. 부모(SeatsClient)가 `assigningGroup`으로 조건부
+ * 마운트하므로 `open` prop은 받지 않는다.
  */
 export function SeatAssignModal({ eid, group, onClose }: SeatAssignModalProps) {
   const assignmentsQuery = useSeatAssignments(eid, group.groupNo);

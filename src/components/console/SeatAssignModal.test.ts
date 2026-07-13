@@ -16,9 +16,9 @@ import type { GuestResponse } from '@/types/guest';
 import type { SeatSlotResponse } from '@/types/seat';
 
 /**
- * 렌더 없이 배정 편집 순수 로직만 단위 테스트한다(vitest.config.ts가 jsdom 없이 node 환경만
- * 제공 — SeatGroupForm.test.ts/SlotTitleTable.test.ts와 동일 전략, PATTERN-020). 핵심 위험
- * (02-architect §5-1) — ord는 배열 위치에서 파생되어야 하고, 저장 payload는 항상 그룹의
+ * 렌더 없이 배정 편집 순수 로직만 단위 테스트한다 — 이 프로젝트 vitest는 jsdom 없이 node
+ * 환경만 제공하므로 DOM 없는 순수 로직만 테스트한다(기존 SeatGroupForm/SlotTitleTable 테스트와
+ * 동일 전략). 핵심 위험 — ord는 배열 위치에서 파생되어야 하고, 저장 payload는 항상 그룹의
  * 전체 배정 집합이어야 한다(부분 전송 시 원자 교체가 나머지를 삭제).
  */
 function makeSlot(overrides: Partial<SeatSlotResponse> = {}): SeatSlotResponse {
