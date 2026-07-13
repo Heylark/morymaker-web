@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ADMIN_ROLES, hasAnyRole, STAFF_ROLES } from './roles';
+import { ADMIN_ROLES, hasAnyRole, STAFF_ROLES, SYSTEM_ADMIN_ROLES } from './roles';
 
 describe('hasAnyRole — STAFF_ROLES 포함/미포함 역할 판정', () => {
   it('EVENT_STAFF만 가진 사용자는 STAFF_ROLES 게이트를 통과한다', () => {
@@ -36,5 +36,24 @@ describe('hasAnyRole — ADMIN_ROLES 포함/미포함 역할 판정 (콘솔 게�
 
   it('역할이 아예 없으면 차단된다', () => {
     expect(hasAnyRole([], ADMIN_ROLES)).toBe(false);
+  });
+});
+
+describe('hasAnyRole — SYSTEM_ADMIN_ROLES 포함/미포함 역할 판정 (계정 관리 게이트 SSOT)', () => {
+  it('SYSTEM_ADMIN은 SYSTEM_ADMIN_ROLES 게이트를 통과한다', () => {
+    expect(hasAnyRole(['SYSTEM_ADMIN'], SYSTEM_ADMIN_ROLES)).toBe(true);
+  });
+
+  it('EVENT_ADMIN은 ADMIN_ROLES는 통과해도 SYSTEM_ADMIN_ROLES는 통과하지 못한다(과허용 방지가 목적)', () => {
+    expect(hasAnyRole(['EVENT_ADMIN'], ADMIN_ROLES)).toBe(true);
+    expect(hasAnyRole(['EVENT_ADMIN'], SYSTEM_ADMIN_ROLES)).toBe(false);
+  });
+
+  it('EVENT_STAFF는 SYSTEM_ADMIN_ROLES 게이트를 통과하지 못한다', () => {
+    expect(hasAnyRole(['EVENT_STAFF'], SYSTEM_ADMIN_ROLES)).toBe(false);
+  });
+
+  it('역할이 아예 없으면 차단된다', () => {
+    expect(hasAnyRole([], SYSTEM_ADMIN_ROLES)).toBe(false);
   });
 });

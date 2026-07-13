@@ -11,6 +11,13 @@ export const STAFF_ROLES = ['SYSTEM_ADMIN', 'EVENT_ADMIN', 'EVENT_STAFF'] as con
  */
 export const ADMIN_ROLES = ['SYSTEM_ADMIN', 'EVENT_ADMIN'] as const;
 
+/**
+ * 계정 관리(`/accounts`, ADM-11) 게이트가 허용하는 역할 — SSOT. ADMIN_ROLES와 달리 EVENT_ADMIN을
+ * 배제한다 — auth `/api/accounts`가 hasRole(SYSTEM_ADMIN) 단일 게이트라(AdminApiSecurityConfig),
+ * 이 목록이 EVENT_ADMIN을 허용하면 web은 통과시키고 auth만 403을 내는 UX 불일치가 생긴다.
+ */
+export const SYSTEM_ADMIN_ROLES = ['SYSTEM_ADMIN'] as const;
+
 /** 사용자 role 목록 중 하나라도 필요 role 목록에 포함되면 true. 순서·중복은 판정에 영향 없음. */
 export function hasAnyRole(userRoles: readonly string[], requiredRoles: readonly string[]): boolean {
   return userRoles.some((role) => requiredRoles.includes(role));
