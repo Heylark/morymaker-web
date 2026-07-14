@@ -49,8 +49,15 @@ export function AccountList({ accounts }: AccountListProps) {
               하고, pill에만 self-start를 줘서 그것만 내용만큼만 차지하게 한다(형제 span까지 stretch를 끊으면
               긴 이메일이 컬럼 폭 제약을 잃고 액션 영역 위로 넘쳐 보인다 — 실측으로 발견한 함정).
             */}
+            {/*
+              break-words — 이 컬럼이 렌더하는 사용자-제어 텍스트(계정명 폴백 헤더·이메일)는 자연 줄바꿈
+              지점(공백·구두점)이 없는 입력을 가정해 전부 break-words를 붙인다. 한쪽 span에만 붙이면 그
+              span은 통과해도 나머지 span에서 동일 오버플로가 재현되므로(헤더 span 누락으로 실제 재현됨),
+              이 컬럼에 사용자 입력 span을 추가할 때는 항상 break-words를 함께 붙일 것 — 필드별로 따로
+              고치는 대신 한 번에 규칙화.
+            */}
             <div className="flex min-w-0 flex-col gap-1">
-              <span className="text-desk font-semibold text-ink">{account.name || account.email}</span>
+              <span className="break-words text-desk font-semibold text-ink">{account.name || account.email}</span>
               <span className="text-sm text-ink-muted break-words">
                 {account.email} · {accountRoleLabel(account.role)}
               </span>
