@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { hasAnyRole } from '@/lib/roles';
+import { FORBIDDEN_PATH, resolveGateOutcome } from '@/lib/roles';
 
 interface UseRequireRoleResult {
   hasRole: boolean;
@@ -16,6 +16,11 @@ interface UseRequireRoleResult {
  * (console)의 useRequireAdmin이 ADMIN_ROLES를 하드코딩하던 것을 role 목록 인자로 받게 추출한
  * 신규 프리미티브다 — console 자체(useRequireAdmin.ts)는 손대지 않는다(동작 보존, 회귀 0).
  * 소비자가 이미 2곳(console·staff) + 향후 표면 예정이라 파라미터화한다.
+ *
+ * 미인증과 인증+role불충족을 서버 게이트(auth-gate.ts)와 동일한 resolveGateOutcome로 구분한다
+ * — 불충족을 로그인으로 보내면 재인증 후 같은 role로 돌아와 다시 차단되는 무한 리다이렉트가
+ * 생긴다. 네트워크 오류(catch)는 세션 상태를 판정할 수 없어 기존대로 로그인으로 보수적으로
+ * 처리한다(오분류로 정당한 사용자를 forbidden에 가두는 쪽보다 재로그인 요구가 안전하다).
  */
 export function useRequireRole(roles: readonly string[]): UseRequireRoleResult {
   const [hasRole, setHasRole] = useState(false);
@@ -27,9 +32,13 @@ export function useRequireRole(roles: readonly string[]): UseRequireRoleResult {
     fetch('/api/auth/me', { signal: controller.signal })
       .then((r) => r.json())
       .then((d: { user: { username: string; roles: string[] } | null }) => {
-        const userRoles = d.user?.roles ?? [];
-        if (!d.user || !hasAnyRole(userRoles, roles)) {
+        const outcome = resolveGateOutcome(d.user?.roles ?? null, roles);
+        if (outcome === 'UNAUTHENTICATED') {
           router.replace('/oauth/login');
+          return;
+        }
+        if (outcome === 'FORBIDDEN') {
+          router.replace(FORBIDDEN_PATH);
           return;
         }
         setHasRole(true);
