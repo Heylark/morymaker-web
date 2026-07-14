@@ -44,7 +44,7 @@ export function AccountForm() {
 
   if (createdEmail) {
     return (
-      <div className="flex flex-col gap-4 rounded-card bg-surface p-6 shadow-sm ring-1 ring-black/5">
+      <div className="flex flex-col gap-4 rounded-card bg-surface p-6 shadow-sm ring-1 ring-line-soft">
         <h2 className="text-desk-lg font-semibold text-ink">계정이 생성되었습니다</h2>
         <p className="text-ink-muted">
           <span className="font-semibold text-ink">{createdEmail}</span> 계정으로, 관리자가 지정한 비밀번호로 로그인할 수
@@ -75,21 +75,21 @@ export function AccountForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-4 rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5"
+      className="flex flex-col gap-4 rounded-card bg-surface p-4 shadow-sm ring-1 ring-line-soft"
     >
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">이메일 (필수)</span>
         <input
           type="email"
           {...register('email', { required: true })}
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+          className="min-h-touch rounded-card border border-line px-4 text-desk"
         />
       </label>
       {errors.email && <p className="text-sm text-danger">이메일을 입력하세요.</p>}
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">이름 (선택)</span>
-        <input {...register('name')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+        <input {...register('name')} className="min-h-touch rounded-card border border-line px-4 text-desk" />
       </label>
 
       <label className="flex flex-col gap-1">
@@ -98,7 +98,7 @@ export function AccountForm() {
           <input
             type={showPassword ? 'text' : 'password'}
             {...register('password', { required: true, minLength: 8 })}
-            className="min-h-touch flex-1 rounded-card border border-black/10 px-4 text-desk"
+            className="min-h-touch flex-1 rounded-card border border-line px-4 text-desk"
           />
           <button
             type="button"
@@ -115,7 +115,7 @@ export function AccountForm() {
         <span className="text-sm text-ink-muted">역할 (필수)</span>
         <select
           {...register('role', { required: true })}
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+          className="min-h-touch rounded-card border border-line px-4 text-desk"
         >
           {ACCOUNT_ROLE_OPTIONS.map((r) => (
             <option key={r} value={r}>
@@ -148,7 +148,7 @@ export function AccountForm() {
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">메모 (선택)</span>
-        <input {...register('note')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+        <input {...register('note')} className="min-h-touch rounded-card border border-line px-4 text-desk" />
       </label>
 
       <button

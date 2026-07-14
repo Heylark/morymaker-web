@@ -20,7 +20,7 @@ export function EventList({ events }: EventListProps) {
       {events.map((event) => (
         <li
           key={event.id}
-          className="flex items-center justify-between gap-3 rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5"
+          className="flex items-center justify-between gap-3 rounded-card bg-surface p-4 shadow-sm ring-1 ring-line-soft"
         >
           <div className="flex flex-col gap-1">
             <span className="text-desk font-semibold text-ink">{event.name}</span>

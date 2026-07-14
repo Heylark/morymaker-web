@@ -57,7 +57,7 @@ export function EventConsoleShell({ eid, children }: EventConsoleShellProps) {
       {/* md 미만은 하단 고정 탭바가 대신하므로 사이드바를 렌더에서 제외한다(폭 224px가
           375px 뷰포트를 압착하던 원인 — 아래 하단 탭바로 완전히 대체). md 이상은 기존
           레이아웃 그대로 유지해 데스크톱 회귀가 없다. */}
-      <aside className="hidden w-56 shrink-0 flex-col gap-4 border-r border-black/10 bg-surface p-4 md:flex">
+      <aside className="hidden w-56 shrink-0 flex-col gap-4 border-r border-line-soft bg-surface p-4 md:flex">
         <Link href="/events" className="text-sm text-ink-muted hover:text-ink">
           ← 행사 목록
         </Link>
@@ -78,7 +78,7 @@ export function EventConsoleShell({ eid, children }: EventConsoleShellProps) {
           스크롤을 무력화해 좁은 화면에서 콘텐츠가 컨테이너 밖으로 밀려나며 배경이 끊긴다 —
           nav 렌더 방식과 무관하게 항상 필요하다. */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b border-black/10 bg-surface px-6 py-4">
+        <header className="border-b border-line-soft bg-surface px-6 py-4">
           {event && <p className="text-desk font-semibold text-ink">관리 중인 행사: {event.name}</p>}
         </header>
 
@@ -100,7 +100,7 @@ export function EventConsoleShell({ eid, children }: EventConsoleShellProps) {
           있는 기기에서 탭 영역이 잘리지 않도록 한다. */}
       <nav
         aria-label="주요 메뉴"
-        className="fixed inset-x-0 bottom-0 z-50 flex border-t border-black/10 bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 flex border-t border-line-soft bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         {implementedItems.map((item) => {
           const href = item.path(eid);

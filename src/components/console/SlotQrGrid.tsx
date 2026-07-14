@@ -19,13 +19,13 @@ export function SlotQrGrid({ eid, zone }: SlotQrGridProps) {
   const { data: slots, isLoading, isError } = useZoneSlots(eid, zone.id, open);
 
   return (
-    <section className="flex flex-col gap-4 rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5">
+    <section className="flex flex-col gap-4 rounded-card bg-surface p-4 shadow-sm ring-1 ring-line-soft">
       <div className="flex items-center justify-between">
         <h2 className="text-desk font-semibold text-ink">자리 QR</h2>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="min-h-touch rounded-card border border-black/10 px-4 text-sm font-medium text-ink"
+          className="min-h-touch rounded-card border border-line px-4 text-sm font-medium text-ink"
         >
           {open ? 'QR 미리보기 닫기' : 'QR 미리보기 열기'}
         </button>
@@ -43,7 +43,7 @@ export function SlotQrGrid({ eid, zone }: SlotQrGridProps) {
               key={slot.slotCode}
               // sm 미만(모바일 1열)에서만 폭을 좁혀 가운데 정렬한다 — sm 이상은 기존
               // 다열 그리드에서 컬럼 폭을 그대로 채우던 모양을 그대로 유지(회귀 0).
-              className="mx-auto flex max-w-44 flex-col items-center gap-2 rounded-card border border-black/10 p-3 sm:mx-0 sm:max-w-none"
+              className="mx-auto flex max-w-44 flex-col items-center gap-2 rounded-card border border-line-soft p-3 sm:mx-0 sm:max-w-none"
             >
               {/* 그리드에 자리 수만큼 QR이 동시에 나열되므로 발광은 끈다(화면당 발광 예산 1) —
                   scan성은 QrPreview의 원시 흑백 렌더가 그대로 담당 */}
