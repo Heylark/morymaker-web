@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* 워크트리 밖(컨테이너 공유 docs·tasks)을 가리키는 심볼릭 링크를 Tailwind 자동 콘텐츠
+   스캔이 따라가려다 Turbopack이 "leaves the filesystem root" panic으로 죽는 문제 방지 —
+   두 심볼릭 링크를 스캔 대상에서 명시 제외한다(경로는 이 파일 기준 상대경로). */
+@source not "../../docs";
+@source not "../../tasks";
+
 /* 공유 primitives 클래스 층(버튼·배지·라벨·row·상태칩·QR 발광 박스·금선 프레임) —
    컴포넌트별 .tsx 래퍼가 이 클래스들을 소비한다(src/components/shared/*.tsx 참조). */
 @import "../components/shared/primitives.css";
