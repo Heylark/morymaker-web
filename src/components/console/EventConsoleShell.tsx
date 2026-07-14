@@ -27,7 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: 'guests', label: '명단', path: (eid) => `/events/${eid}/roster`, implemented: true },
   { key: 'seats', label: '좌석', path: (eid) => `/events/${eid}/seats`, implemented: true },
   { key: 'branding', label: '브랜딩', path: (eid) => `/events/${eid}/branding`, implemented: false },
-  { key: 'stats', label: '통계', path: (eid) => `/events/${eid}/stats`, implemented: false },
+  { key: 'stats', label: '통계', path: (eid) => `/events/${eid}/dashboard`, implemented: true },
 ];
 
 /**
