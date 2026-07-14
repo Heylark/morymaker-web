@@ -20,10 +20,10 @@ interface AccountFormValues {
 /**
  * 계정 생성 폼(EventForm+GuestEditModal 미러) — password는 관리자가 직접 지정한다(서버 자동생성
  * 아님, 재설정 API도 부재). 노출할 서버 발급 시크릿이 없어 "복사 가능한 자격증명 카드" 같은
- * 통상 시크릿 노출 패턴은 애초에 성립하지 않는다(ADR-002) — 입력값 확인용 show/hide 토글만 둔다.
+ * 통상 시크릿 노출 패턴은 애초에 성립하지 않는다 — 입력값 확인용 show/hide 토글만 둔다.
  *
  * 성공 시 즉시 이동하지 않고 이 컴포넌트 안에서 확인 화면으로 전환한다(관리자가 방금 지정한
- * 비밀번호로 로그인하라는 안내를 놓치지 않도록 — ADR-002 "간단 확인 안내 후 목록 복귀").
+ * 비밀번호로 로그인하라는 안내를 놓치지 않도록 — 간단 확인 안내 후 목록으로 복귀한다).
  */
 export function AccountForm() {
   const [showPassword, setShowPassword] = useState(false);
