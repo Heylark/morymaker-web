@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useZones } from '@/hooks/useZones';
+import { StatePill } from '@/components/shared/StatePill';
 
 interface ZoneListProps {
   eid: string;
@@ -37,18 +38,14 @@ export function ZoneList({ eid }: ZoneListProps) {
             <li key={zone.id}>
               <Link
                 href={`/events/${eid}/parking/${zone.id}`}
-                className="flex items-center justify-between gap-3 rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5"
+                className="flex items-center justify-between gap-3 rounded-card border border-line-soft bg-surface p-4"
               >
                 <div className="flex flex-col gap-1">
                   <span className="text-desk font-semibold text-ink">{zone.zoneName}</span>
                   <span className="text-sm text-ink-muted">{zone.slotCount}자리</span>
                 </div>
                 {/* zone.outdoor는 서버가 판정해 내려준 값 그대로 사용한다(프론트 재판정 금지) */}
-                {zone.outdoor && (
-                  <span className="inline-flex w-fit rounded-full bg-state-active/10 px-3 py-1 text-sm font-medium text-state-active">
-                    야외
-                  </span>
-                )}
+                {zone.outdoor && <StatePill tone="pending">야외</StatePill>}
               </Link>
             </li>
           ))}
