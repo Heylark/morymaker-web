@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { API_BASE } from '@/lib/api';
+import { API_BASE, AUTH_API_BASE } from '@/lib/api';
 import {
   COOKIE_ACCESS_TOKEN,
   COOKIE_AUTH,
@@ -28,6 +28,25 @@ export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
 const HEADERS_TO_REMOVE = new Set(['content-encoding', 'transfer-encoding', 'content-length']);
+
+/**
+ * auth 서버가 소유한 경로 프리픽스 — 이 목록에 매칭되면 업스트림을 api 대신 auth로 분기한다.
+ * 신규 auth 도메인 REST 경로를 추가할 때는 이 배열을 갱신해야 한다(SSOT). 매칭 안 되는 경로는
+ * 전부 기존 API_BASE로 흘러 api 경로 동작이 불변으로 유지된다(fail-safe — 오타는 api로 가서
+ * 404로 시끄럽게 실패할 뿐, auth로 조용히 오배송되지 않는다).
+ */
+const AUTH_PROXY_PREFIXES = ['api/accounts'] as const;
+
+/**
+ * targetPath 프리픽스로 업스트림 base를 분기한다. 정확히 일치하거나 '/'로 이어지는 하위 경로만
+ * 매칭한다(예: 'api/accounts-x'는 'api/accounts'로 시작하지만 오매칭되지 않는다 — 경계 매칭).
+ */
+function resolveUpstreamBase(targetPath: string): string {
+  const isAuthOwned = AUTH_PROXY_PREFIXES.some(
+    (prefix) => targetPath === prefix || targetPath.startsWith(`${prefix}/`),
+  );
+  return isAuthOwned ? AUTH_API_BASE! : API_BASE!;
+}
 
 /** exp 클레임 기준 만료 판정 — 클레임 부재/malformed(exp=0)는 안전하게 "이미 만료"로 취급한다(fail-closed). */
 function isTokenExpired(token: string): boolean {
@@ -62,7 +81,7 @@ async function proxyRequest(
 ): Promise<NextResponse> {
   const { path } = await context.params;
   const targetPath = path.join('/');
-  const targetUrl = `${API_BASE}/${targetPath}${request.nextUrl.search}`;
+  const targetUrl = `${resolveUpstreamBase(targetPath)}/${targetPath}${request.nextUrl.search}`;
 
   const mode = getAuthMode(targetPath, request.method);
 

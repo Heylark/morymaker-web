@@ -112,4 +112,64 @@ describe('BFF 프록시 — /api/proxy/[...path]', () => {
     const [, init] = vi.mocked(fetch).mock.calls[0];
     expect((init?.headers as Record<string, string>).Authorization).toBe(`Bearer ${token}`);
   });
+
+  describe('auth 라우팅 확장 — api/accounts는 API_BASE(api 30100) 대신 AUTH_API_BASE(auth 30000)로 분기', () => {
+    function authenticatedToken(): string {
+      const futureExp = Math.floor(Date.now() / 1000) + 3600;
+      const header = Buffer.from(JSON.stringify({ alg: 'RS256' })).toString('base64url');
+      const body = Buffer.from(JSON.stringify({ exp: futureExp, roles: ['SYSTEM_ADMIN'] })).toString('base64url');
+      return `${header}.${body}.sig`;
+    }
+
+    it('api/accounts — AUTH_API_BASE(auth 30000)로 업스트림 URL이 조립된다', async () => {
+      const token = authenticatedToken();
+      mockCookieStore.get.mockImplementation((name: string) => {
+        if (name === 'mm_access_token') return { value: token };
+        return undefined;
+      });
+      vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ data: [] }), { status: 200 }));
+
+      const { GET } = await import('./route');
+      const request = new NextRequest('http://localhost:3000/api/proxy/api/accounts');
+      const response = await GET(request, { params: Promise.resolve({ path: ['api', 'accounts'] }) });
+
+      expect(response.status).toBe(200);
+      const [url] = vi.mocked(fetch).mock.calls[0];
+      expect(url).toBe('http://localhost:30000/api/accounts');
+    });
+
+    it('api/accounts/{id} 하위 경로도 AUTH_API_BASE로 라우팅된다(경계 매칭 — startsWith prefix+"/")', async () => {
+      const token = authenticatedToken();
+      mockCookieStore.get.mockImplementation((name: string) => {
+        if (name === 'mm_access_token') return { value: token };
+        return undefined;
+      });
+      vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ data: {} }), { status: 200 }));
+
+      const { GET } = await import('./route');
+      const request = new NextRequest('http://localhost:3000/api/proxy/api/accounts/acc-1');
+      const response = await GET(request, { params: Promise.resolve({ path: ['api', 'accounts', 'acc-1'] }) });
+
+      expect(response.status).toBe(200);
+      const [url] = vi.mocked(fetch).mock.calls[0];
+      expect(url).toBe('http://localhost:30000/api/accounts/acc-1');
+    });
+
+    it('api/accounts-x 같은 유사 경로는 오매칭 없이 API_BASE(api 30100)로 유지된다(경계 매칭)', async () => {
+      const token = authenticatedToken();
+      mockCookieStore.get.mockImplementation((name: string) => {
+        if (name === 'mm_access_token') return { value: token };
+        return undefined;
+      });
+      vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ data: [] }), { status: 200 }));
+
+      const { GET } = await import('./route');
+      const request = new NextRequest('http://localhost:3000/api/proxy/api/accounts-x');
+      const response = await GET(request, { params: Promise.resolve({ path: ['api', 'accounts-x'] }) });
+
+      expect(response.status).toBe(200);
+      const [url] = vi.mocked(fetch).mock.calls[0];
+      expect(url).toBe('http://localhost:30100/api/accounts-x');
+    });
+  });
 });

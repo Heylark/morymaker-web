@@ -14,6 +14,7 @@ export default defineConfig({
       AUTH_REDIRECT_URI: 'http://localhost:3000/oauth/callback',
       AUTH_HMAC_SECRET: 'test-secret-at-least-32-chars-long',
       API_BASE_URL: 'http://localhost:30100',
+      AUTH_API_BASE_URL: 'http://localhost:30000',
     },
   },
   resolve: {
