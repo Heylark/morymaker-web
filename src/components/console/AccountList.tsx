@@ -39,7 +39,7 @@ export function AccountList({ accounts }: AccountListProps) {
         {accounts.map((account) => (
           <li
             key={account.id}
-            className="flex items-center justify-between gap-3 rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5"
+            className="flex items-center justify-between gap-3 rounded-card bg-surface p-4 shadow-sm ring-1 ring-line-soft"
           >
             {/*
               min-w-0 — 액션 칼럼을 flex-shrink-0로 고정한 뒤에는 이 칼럼이 줄어드는 쪽이 되는데, flex item 기본

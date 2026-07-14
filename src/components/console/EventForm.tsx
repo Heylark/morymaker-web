@@ -108,13 +108,13 @@ export function EventForm({ event }: EventFormProps) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col gap-4 rounded-card bg-surface p-4 shadow-sm ring-1 ring-black/5"
+      className="flex flex-col gap-4 rounded-card bg-surface p-4 shadow-sm ring-1 ring-line-soft"
     >
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">행사명 (필수)</span>
         <input
           {...register('name', { required: true })}
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+          className="min-h-touch rounded-card border border-line px-4 text-desk"
         />
       </label>
       {errors.name && <p className="text-sm text-danger">행사명을 입력하세요.</p>}
@@ -124,18 +124,18 @@ export function EventForm({ event }: EventFormProps) {
         <input
           type="datetime-local"
           {...register('eventDate')}
-          className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+          className="min-h-touch rounded-card border border-line px-4 text-desk"
         />
       </label>
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">장소 (선택)</span>
-        <input {...register('place')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+        <input {...register('place')} className="min-h-touch rounded-card border border-line px-4 text-desk" />
       </label>
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">유형 (선택)</span>
-        <select {...register('type')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk">
+        <select {...register('type')} className="min-h-touch rounded-card border border-line px-4 text-desk">
           <option value="">선택 안 함</option>
           {EVENT_TYPE_OPTIONS.map((t) => (
             <option key={t} value={t}>
@@ -147,7 +147,7 @@ export function EventForm({ event }: EventFormProps) {
 
       <label className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">키비주얼 (선택)</span>
-        <input {...register('kv')} className="min-h-touch rounded-card border border-black/10 px-4 text-desk" />
+        <input {...register('kv')} className="min-h-touch rounded-card border border-line px-4 text-desk" />
       </label>
 
       {event && (
@@ -156,7 +156,7 @@ export function EventForm({ event }: EventFormProps) {
             <span className="text-sm text-ink-muted">상태</span>
             <select
               {...register('status', { required: true })}
-              className="min-h-touch rounded-card border border-black/10 px-4 text-desk"
+              className="min-h-touch rounded-card border border-line px-4 text-desk"
             >
               {EVENT_STATUS_OPTIONS.map((s) => (
                 <option key={s} value={s}>
