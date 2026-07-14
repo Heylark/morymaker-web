@@ -93,3 +93,19 @@ export interface EventUpdateRequest {
   status: string;
   active: boolean;
 }
+
+/**
+ * PUT /api/events/{eid}/branding → 200 {data: EventResponse} — 컬러 4종 편집은 행사 수정
+ * (EventUpdateRequest)과 분리된 별도 엔드포인트다. null=미지정(게스트 기본색 상속) — 값이
+ * 유의미한 상태라 옵셔널이 아닌 명시 `| null`로 둔다. kv·defaultIdleMode는 이 폼이 편집하지
+ * 않는 필드지만 요청 바디에는 포함해야 한다 — PUT이 full-replace 의미일 때 컬러만 보내면 두
+ * 필드가 조용히 지워지므로, 호출부(BrandingForm)가 현재값을 그대로 라운드트립해 되돌려 보낸다.
+ */
+export interface EventBrandingUpdateRequest {
+  bgColor: string | null;
+  pointColor: string | null;
+  titleColor: string | null;
+  bodyColor: string | null;
+  kv: string | null;
+  defaultIdleMode: string | null;
+}
