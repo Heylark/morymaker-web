@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getStats } from '@/lib/api/stats';
 
-// CP-1 확정(15초, 현장 실시간성 vs 부하 절충). 상수로 박제 — 설정 UI 등 과잉설계 금지.
+// 갱신주기 15초 — 현장 실시간성과 서버 부하의 절충값. 상수로 박제(설정 UI 등 과잉설계 금지).
 export const STATS_REFETCH_INTERVAL_MS = 15_000;
 
 /**
