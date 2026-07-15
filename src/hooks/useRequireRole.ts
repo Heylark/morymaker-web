@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FORBIDDEN_PATH, resolveGateOutcome } from '@/lib/roles';
+import { BASE_PATH } from '@/lib/base-path';
 
 interface UseRequireRoleResult {
   hasRole: boolean;
@@ -29,7 +30,8 @@ export function useRequireRole(roles: readonly string[]): UseRequireRoleResult {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/auth/me', { signal: controller.signal })
+    // 브라우저 fetch는 basePath를 자동으로 붙이지 않는다 — 명시 접두 필수(경계 지점).
+    fetch(`${BASE_PATH}/api/auth/me`, { signal: controller.signal })
       .then((r) => r.json())
       .then((d: { user: { username: string; roles: string[] } | null }) => {
         const outcome = resolveGateOutcome(d.user?.roles ?? null, roles);

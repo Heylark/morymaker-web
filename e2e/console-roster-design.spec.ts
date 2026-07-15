@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, BASE_PATH } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * 콘솔 명단·초대(ADM-05·12) 실용 톤 회귀 — 실 로그인(OIDC 폼) → 명단·초대 화면을 순회하며
@@ -66,9 +67,10 @@ test.describe('콘솔 명단·초대 — 실용 톤(라이트) 회귀', () => {
     await assertLightNoGlowNoBlackBorder(page);
 
     // 명단 도달성(nav 배선) — 사이드바 "명단" 링크가 실제로 이 라우트를 가리키는지
+    // <Link>가 렌더하는 실제 DOM href는 basePath가 자동 접두된 외부 좌표계 값이다.
     await expect(page.getByRole('link', { name: '명단', exact: true })).toHaveAttribute(
       'href',
-      `/events/${EID}/roster`,
+      `${BASE_PATH}/events/${EID}/roster`,
     );
 
     await shot(page, 'ADM-05-roster-initial');
@@ -93,8 +95,13 @@ test.describe('콘솔 명단·초대 — 실용 톤(라이트) 회귀', () => {
     await expect(body).toHaveValue(/\[\$QR링크\]/);
     await shot(page, 'ADM-12-template-editor');
 
+    // index:1 고정 선택은 이 이벤트에 시드된 게스트가 정확히 1명일 때만 유효하다 — 로컬 dev DB는
+    // 다른 e2e 스펙(좌석 배정 등)이 남긴 게스트가 누적될 수 있어 이름으로 옵션을 특정한다(무공유
+    // 상태 가정 회피). value는 gid이지 이름이 아니므로(사실 H) 옵션에서 value를 읽어와 선택.
     const select = page.locator('select').last();
-    await select.selectOption({ index: 1 });
+    const targetOption = select.locator('option', { hasText: '테스트게스트' });
+    const targetValue = await targetOption.getAttribute('value');
+    await select.selectOption(targetValue!);
     // 서버 렌더 그대로 표시 — gid 치환(이름매칭 아님)이 실제로 일어나는지
     await expect(page.getByText('테스트게스트', { exact: false }).last()).toBeVisible();
     await shot(page, 'ADM-12-template-preview-rendered');

@@ -24,7 +24,10 @@ export default async function SlotPage({ params, searchParams }: SlotPageProps) 
   const payload = auth ? decodeAuthCookieNode(auth.value) : null;
 
   if (payload && hasAnyRole(payload.roles, STAFF_ROLES)) {
-    // redirect()는 basePath를 자동으로 붙인다 — 수동 prepend 시 basePath가 2중 적용된다.
+    // redirect()는 basePath를 자동으로 붙인다 — 단 이는 Server Component 렌더 경로 한정이다
+    // (이 파일이 바로 그 경우). Route Handler(app/**/route.ts)의 redirect는 수동 접두가
+    // 필요하다 — 이 게이트를 Route Handler로 옮기면 조용히 깨진다. 수동 prepend 시엔
+    // basePath가 2중 적용된다.
     redirect('/staff/parking-board');
   }
 

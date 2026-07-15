@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * 콘솔 좌석 구성(ADM-06) 모바일(375px) 반응형 스모크 — -07이 확립한 하단 탭바 셸에 좌석 메뉴가

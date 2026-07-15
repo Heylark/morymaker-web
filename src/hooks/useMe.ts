@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { BASE_PATH } from '@/lib/base-path';
 
 interface MeResponse {
   user: { username: string; roles: string[]; eventIds: string[] } | null;
@@ -15,7 +16,8 @@ export function useMe() {
   return useQuery({
     queryKey: ['auth', 'me'],
     queryFn: async (): Promise<MeResponse> => {
-      const res = await fetch('/api/auth/me');
+      // 브라우저 fetch는 basePath를 자동으로 붙이지 않는다 — 명시 접두 필수(경계 지점).
+      const res = await fetch(`${BASE_PATH}/api/auth/me`);
       return res.json();
     },
   });

@@ -17,7 +17,7 @@ describe('lib/api/kiosk — BFF 프록시 경유 키오스크 공개 도메인 �
     const result = await nameSearch('evt1', '김민준');
 
     expect(fetch).toHaveBeenCalledWith(
-      '/api/proxy/api/public/events/evt1/attendees?name=%EA%B9%80%EB%AF%BC%EC%A4%80',
+      '/app/api/proxy/api/public/events/evt1/attendees?name=%EA%B9%80%EB%AF%BC%EC%A4%80',
       undefined,
     );
     expect(result).toEqual({ attendees, searchState: 'ONE', total: 1 });
@@ -51,7 +51,7 @@ describe('lib/api/kiosk — BFF 프록시 경유 키오스크 공개 도메인 �
     const response = await checkin('evt1', 'g1');
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/public/events/evt1/checkin');
+    expect(url).toBe('/app/api/proxy/api/public/events/evt1/checkin');
     expect(init?.method).toBe('POST');
     expect(JSON.parse(init?.body as string)).toEqual({ guestId: 'g1' });
     expect(response).toEqual(result);
@@ -84,7 +84,7 @@ describe('lib/api/kiosk — BFF 프록시 경유 키오스크 공개 도메인 �
 
     const result = await parkingSearch('evt1', '3456');
 
-    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/public/events/evt1/parking-search?plateTail=3456', undefined);
+    expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/public/events/evt1/parking-search?plateTail=3456', undefined);
     expect(result).toEqual(records);
   });
 

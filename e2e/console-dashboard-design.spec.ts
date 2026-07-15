@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, BASE_PATH } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * 콘솔 행사 현황·통계(ADM-03, ADM-10 흡수) 회귀 — 5블록 시각화(도넛·참석 진행바·주차 구획
@@ -75,7 +76,8 @@ test.describe('콘솔 행사 현황(ADM-03) — 대시보드 렌더·nav·Excel�
     // 다른 화면(좌석)에서 시작해 nav 클릭으로 이동 — path 교정(구 /stats 잔존 시 404) 검증
     await page.goto(`/events/${EID}/seats`);
     const statsLink = page.getByRole('link', { name: '통계', exact: true });
-    await expect(statsLink).toHaveAttribute('href', `/events/${EID}/dashboard`);
+    // <Link>가 렌더하는 실제 DOM href는 basePath가 자동 접두된 외부 좌표계 값이다.
+    await expect(statsLink).toHaveAttribute('href', `${BASE_PATH}/events/${EID}/dashboard`);
     await statsLink.click();
     await page.waitForURL(`**/events/${EID}/dashboard`);
     // 404였다면 dashboard 전용 헤딩·5블록이 렌더될 수 없다 — 이 단언 자체가 404 아님의 증거

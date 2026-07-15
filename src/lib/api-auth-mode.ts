@@ -30,10 +30,14 @@
 export type AuthMode = 'private' | 'hybrid' | 'public';
 
 /**
- * api SecurityConfig의 permitAll matcher 미러. 이 prefix로 시작하는 GET만 PUBLIC.
- * ⚠️ api SecurityConfig 공개 matcher 변경 시 이 목록도 함께 갱신.
+ * api permitAll 경로의 미러 — 이 prefix로 시작하는 GET만 PUBLIC.
+ *
+ * ⚠️ 좌표계 주의: 이 목록은 **api 외부 URL 기준**이다(proxyFetch에 넘어오는 경로).
+ *    api 내부 SecurityConfig matcher는 context-path(`/api`)를 제외한 좌표계라 문자열이 다르다.
+ *    (예: matcher `/public/**` ↔ 외부 URL `/api/public/`)
+ *    api 공개 matcher 변경 시 `contextPath(/api) + matcher` 로 환산해 갱신할 것.
  */
-const PUBLIC_PREFIXES = ['/api/public/', '/actuator/health'] as const;
+const PUBLIC_PREFIXES = ['/api/public/', '/api/actuator/health'] as const;
 
 /**
  * nullable-principal enrich GET — 토큰 있으면 있는 대로, 없어도 공개 응답 가능한 경로.

@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * 콘솔 브랜딩·대기화면(ADM-04) 모바일(375px) 반응형 스모크 — 하단 탭바 셸에 브랜딩 메뉴가 정상

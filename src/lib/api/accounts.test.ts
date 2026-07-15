@@ -27,7 +27,7 @@ describe('lib/api/accounts — BFF 프록시 경유 계정 어드민 함수', ()
 
     const result = await listAccounts();
 
-    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/accounts', undefined);
+    expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/accounts', undefined);
     expect(result).toEqual(accounts);
   });
 
@@ -38,7 +38,7 @@ describe('lib/api/accounts — BFF 프록시 경유 계정 어드민 함수', ()
     const result = await createAccount(CREATE_REQUEST);
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/accounts');
+    expect(url).toBe('/app/api/proxy/api/accounts');
     expect(init?.method).toBe('POST');
     expect(JSON.parse(init?.body as string)).toEqual(CREATE_REQUEST);
     expect(result).toEqual(created);
@@ -51,7 +51,7 @@ describe('lib/api/accounts — BFF 프록시 경유 계정 어드민 함수', ()
     const result = await updateAccount('a1', request);
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/accounts/a1');
+    expect(url).toBe('/app/api/proxy/api/accounts/a1');
     expect(init?.method).toBe('PUT');
     expect(JSON.parse(init?.body as string)).toEqual(request);
     expect(result).toMatchObject({ id: 'a1' });
@@ -63,7 +63,7 @@ describe('lib/api/accounts — BFF 프록시 경유 계정 어드민 함수', ()
     const result = await updateAccountStatus('a1', { status: '비활성' });
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/accounts/a1/status');
+    expect(url).toBe('/app/api/proxy/api/accounts/a1/status');
     expect(init?.method).toBe('PUT');
     expect(JSON.parse(init?.body as string)).toEqual({ status: '비활성' });
     expect(result).toMatchObject({ status: '비활성' });

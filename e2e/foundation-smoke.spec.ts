@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 /**
  * 디자인 파운데이션 스모크 — 루트 페이지(백엔드 무관 정적 화면)를 기준으로 세 가지만 확인한다:

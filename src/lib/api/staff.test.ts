@@ -33,7 +33,7 @@ describe('lib/api/staff — BFF 프록시 경유 실행자 도메인 함수', ()
 
     const result = await lookup('evt-1', '김 민준');
 
-    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/events/evt-1/lookup?q=%EA%B9%80%20%EB%AF%BC%EC%A4%80', undefined);
+    expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/events/evt-1/lookup?q=%EA%B9%80%20%EB%AF%BC%EC%A4%80', undefined);
     expect(result).toEqual(payload);
   });
 
@@ -44,7 +44,7 @@ describe('lib/api/staff — BFF 프록시 경유 실행자 도메인 함수', ()
     const result = await listParkingRecords('evt-1', { zoneId: 'z1', reviewNeeded: true });
 
     const [url] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/events/evt-1/parking-records?zoneId=z1&reviewNeeded=true');
+    expect(url).toBe('/app/api/proxy/api/events/evt-1/parking-records?zoneId=z1&reviewNeeded=true');
     expect(result).toEqual(records);
   });
 
@@ -52,7 +52,7 @@ describe('lib/api/staff — BFF 프록시 경유 실행자 도메인 함수', ()
     vi.mocked(fetch).mockResolvedValue(jsonResponse({ data: [] }));
     await listParkingRecords('evt-1');
     const [url] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/events/evt-1/parking-records');
+    expect(url).toBe('/app/api/proxy/api/events/evt-1/parking-records');
   });
 
   it('registerParking — POST + JSON 바디로 호출하고 성공 시 data를 꺼낸다', async () => {
@@ -62,7 +62,7 @@ describe('lib/api/staff — BFF 프록시 경유 실행자 도메인 함수', ()
     const result = await registerParking('evt-1', REGISTER_REQUEST);
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/events/evt-1/parking-records');
+    expect(url).toBe('/app/api/proxy/api/events/evt-1/parking-records');
     expect(init?.method).toBe('POST');
     expect(JSON.parse(init?.body as string)).toEqual(REGISTER_REQUEST);
     expect(result).toEqual(registerResult);
@@ -83,18 +83,18 @@ describe('lib/api/staff — BFF 프록시 경유 실행자 도메인 함수', ()
   it('checkoutParking / clearReview — {id} 경로로 POST하고 data를 꺼낸다', async () => {
     vi.mocked(fetch).mockResolvedValue(jsonResponse({ data: { id: 'r1', status: '출차' } }));
     const checkoutResult = await checkoutParking('evt-1', 'r1');
-    expect(vi.mocked(fetch).mock.calls[0][0]).toBe('/api/proxy/api/events/evt-1/parking-records/r1/checkout');
+    expect(vi.mocked(fetch).mock.calls[0][0]).toBe('/app/api/proxy/api/events/evt-1/parking-records/r1/checkout');
     expect(checkoutResult).toEqual({ id: 'r1', status: '출차' });
 
     vi.mocked(fetch).mockResolvedValue(jsonResponse({ data: { id: 'r1', reviewNeeded: false } }));
     await clearReview('evt-1', 'r1');
-    expect(vi.mocked(fetch).mock.calls[1][0]).toBe('/api/proxy/api/events/evt-1/parking-records/r1/review-clear');
+    expect(vi.mocked(fetch).mock.calls[1][0]).toBe('/app/api/proxy/api/events/evt-1/parking-records/r1/review-clear');
   });
 
   it('scanPreview — token을 인코딩해 프리뷰 경로를 호출한다', async () => {
     vi.mocked(fetch).mockResolvedValue(jsonResponse({ data: { id: 'g1', name: '이서연' } }));
     await scanPreview('evt-1', 't 1000');
-    expect(vi.mocked(fetch).mock.calls[0][0]).toBe('/api/proxy/api/events/evt-1/checkin/scan/t%201000');
+    expect(vi.mocked(fetch).mock.calls[0][0]).toBe('/app/api/proxy/api/events/evt-1/checkin/scan/t%201000');
   });
 
   it('checkin — POST + JSON 바디로 체크인 요청을 보낸다', async () => {
@@ -103,7 +103,7 @@ describe('lib/api/staff — BFF 프록시 경유 실행자 도메인 함수', ()
     );
     const result = await checkin('evt-1', { token: 't1000' });
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/events/evt-1/checkin');
+    expect(url).toBe('/app/api/proxy/api/events/evt-1/checkin');
     expect(init?.method).toBe('POST');
     expect(JSON.parse(init?.body as string)).toEqual({ token: 't1000' });
     expect(result.resultCode).toBe('CHECKED_IN');

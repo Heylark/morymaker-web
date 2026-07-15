@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, BASE_PATH } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * 콘솔 좌석 구성(ADM-06) 신규 도메인 회귀 — 그룹 CRUD(지정석/자유석)·배정 편집(ON/OFF 두 모드)·
@@ -96,9 +97,10 @@ test.describe('콘솔 좌석 구성(ADM-06) — 그룹 CRUD·배정·409·toggle
     await page.goto(`/events/${EID}/seats`);
     await assertLightNoGlowNoBlackBorder(page);
 
+    // <Link>가 렌더하는 실제 DOM href는 basePath가 자동 접두된 외부 좌표계 값이다.
     await expect(page.getByRole('link', { name: '좌석', exact: true })).toHaveAttribute(
       'href',
-      `/events/${EID}/seats`,
+      `${BASE_PATH}/events/${EID}/seats`,
     );
     await expect(page.getByRole('heading', { name: '좌석 구성' })).toBeVisible();
     await shot(page, 'ADM-06-seats-initial');
@@ -341,9 +343,10 @@ test.describe('주차 구획(ADM-07) 실용 톤 정합 — 기능 회귀 스모�
     await login(page);
     await page.goto(`/events/${EID}/parking`);
     await assertLightNoGlowNoBlackBorder(page);
+    // <Link>가 렌더하는 실제 DOM href는 basePath가 자동 접두된 외부 좌표계 값이다.
     await expect(page.getByRole('link', { name: '주차', exact: true })).toHaveAttribute(
       'href',
-      `/events/${EID}/parking`,
+      `${BASE_PATH}/events/${EID}/parking`,
     );
     await shot(page, 'ADM-07-parking-after-style-alignment');
   });

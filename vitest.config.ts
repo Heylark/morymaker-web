@@ -15,6 +15,11 @@ export default defineConfig({
       AUTH_HMAC_SECRET: 'test-secret-at-least-32-chars-long',
       API_BASE_URL: 'http://localhost:30100',
       AUTH_API_BASE_URL: 'http://localhost:30000',
+      // 배포 좌표계(basePath='/app')를 기본 테스트 환경으로 고정한다 — 경로 빌더(NAV_ITEMS/TABS)나
+      // 경계 헬퍼(proxyFetch/qr-url)가 실수로 BASE_PATH를 이중 적용하거나 누락하면 이 값 아래에서
+      // 곧바로 RED가 된다(basePath=''였다면 숨었을 결함). basePath='' 회귀는 개별 테스트가
+      // vi.stubEnv + vi.resetModules로 국소 오버라이드한다.
+      NEXT_PUBLIC_BASE_PATH: '/app',
     },
   },
   resolve: {

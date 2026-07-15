@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * 콘솔 6파일(행사 폼·계정 폼·자리 QR·콘솔 셸·계정 목록·행사 목록)에 남아있던 raw
