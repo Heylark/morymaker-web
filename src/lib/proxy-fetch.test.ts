@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { proxyFetch } from './proxy-fetch';
 
 /**
- * proxyFetch는 basePath 경계 지점(§0 두 좌표계) — 브라우저 fetch는 Next.js 라우터를 거치지
+ * proxyFetch는 앱 좌표계와 외부 좌표계가 갈리는 basePath 경계 지점 — 브라우저 fetch는 Next.js 라우터를 거치지
  * 않아 basePath가 자동으로 붙지 않는다. vitest.config.ts의 전역 NEXT_PUBLIC_BASE_PATH='/app'
  * 아래에서 실행되므로, 이 접두가 빠지면 즉시 RED가 된다(같은 도메인의 다른 서비스로 오배송되는
  * 실제 결함을 이 테스트가 재현한다).

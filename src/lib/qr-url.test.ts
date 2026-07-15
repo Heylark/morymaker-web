@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { parseCheckinToken } from './qr-url';
 
 /**
- * vitest.config.ts의 전역 NEXT_PUBLIC_BASE_PATH='/app'(ADR-005) 아래에서 실행된다 — 양성
+ * vitest.config.ts의 전역 NEXT_PUBLIC_BASE_PATH='/app' 아래에서 실행된다 — 양성
  * 케이스는 실제 배포 좌표계(`/app/u/{token}`)로 이동됐다. 호스트 화이트리스트·경로 형태·
  * 음성 거부라는 기존 7케이스의 *의도*는 그대로 보존한다.
  */

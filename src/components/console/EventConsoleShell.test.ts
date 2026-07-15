@@ -29,7 +29,7 @@ describe('EventConsoleShell — isNavItemActive (하단 탭바 활성 판정)', 
 });
 
 /**
- * vitest.config.ts의 전역 NEXT_PUBLIC_BASE_PATH='/app' 환경에서 실행된다(ADR-005). 이 값
+ * vitest.config.ts의 전역 NEXT_PUBLIC_BASE_PATH='/app' 환경에서 실행된다. 이 값
  * 아래에서도 NAV_ITEMS의 path 빌더가 basePath 없는 앱 좌표계를 반환해야 한다 — <Link href>가
  * Next.js 라우터를 거쳐 자동으로 basePath를 붙이고, usePathname()도 strip된 앱 좌표계를
  * 반환하므로 둘이 같은 좌표계로 비교돼야 활성 판정이 성립한다. 누군가 path에 ${BASE_PATH}를
