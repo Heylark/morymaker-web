@@ -21,8 +21,12 @@ interface NavItem {
  * 향후 하위 REQ가 채울 메뉴 자리까지 미리 정의해두되, 아직 라우트가 없는 항목은
  * implemented:false로 남겨 렌더에서 제외한다 — 죽은 링크(클릭해도 404)를 노출하지 않는다.
  * 각 하위 REQ 착수 시 해당 항목의 implemented만 true로 바꾸면 된다.
+ *
+ * export 이유: path 빌더가 앱 좌표계(basePath 없음)를 반환함을 단위 테스트로 고정한다 —
+ * <Link href>는 Next.js가 자동으로 basePath를 붙이므로, 여기 문자열에 BASE_PATH가 섞이면
+ * usePathname()(strip된 값)과 비교가 영구 불일치해 활성 탭이 조용히 죽는다.
  */
-const NAV_ITEMS: NavItem[] = [
+export const NAV_ITEMS: NavItem[] = [
   { key: 'parking', label: '주차', path: (eid) => `/events/${eid}/parking`, implemented: true },
   { key: 'guests', label: '명단', path: (eid) => `/events/${eid}/roster`, implemented: true },
   { key: 'seats', label: '좌석', path: (eid) => `/events/${eid}/seats`, implemented: true },

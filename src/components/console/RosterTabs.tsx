@@ -7,7 +7,12 @@ interface RosterTabsProps {
   eid: string;
 }
 
-const TABS = [
+/**
+ * export 이유: path 빌더가 앱 좌표계(basePath 없음)를 반환함을 단위 테스트로 고정한다 — 이
+ * 컴포넌트는 EventConsoleShell과 달리 aria-current·E2E 활성 단언이 없어(무방비 지점), 이
+ * 단위 테스트가 이중 접두(/app/app) 회귀를 잡는 유일한 자동 게이트다.
+ */
+export const TABS = [
   { key: 'roster', label: '명단·발송', path: (eid: string) => `/events/${eid}/roster` },
   { key: 'template', label: '초대 문자 템플릿', path: (eid: string) => `/events/${eid}/roster/template` },
 ];
