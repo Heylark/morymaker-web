@@ -11,6 +11,7 @@ import {
 } from '@/lib/cookies';
 import { extractEmail, extractRoles } from '@/lib/tokens';
 import { safeReturnTo } from '@/lib/return-to';
+import { BASE_PATH } from '@/lib/base-path';
 
 interface PkceCookiePayload {
   verifier: string;
@@ -25,9 +26,14 @@ interface TokenResponse {
   expires_in: number;
 }
 
-/** 로그인 재개시로 되돌리며 PKCE 임시 쿠키를 정리한다(전 구간 fail-closed 공통 경로). */
+/**
+ * 로그인 재개시로 되돌리며 PKCE 임시 쿠키를 정리한다(전 구간 fail-closed 공통 경로).
+ *
+ * ⚠️ Route Handler의 NextResponse.redirect는 basePath를 자동으로 붙이지 않는다(Server
+ *    Component redirect()와 다름) — 여기가 그 경계라 명시 접두가 필수다.
+ */
 function redirectToLoginRetry(request: NextRequest): NextResponse {
-  const response = NextResponse.redirect(new URL('/oauth/login', request.url));
+  const response = NextResponse.redirect(new URL(`${BASE_PATH}/oauth/login`, request.url));
   response.cookies.set(COOKIE_PKCE, '', { ...COOKIE_EXPIRE_OPTIONS, maxAge: 0 });
   return response;
 }
@@ -123,9 +129,12 @@ export async function GET(request: NextRequest) {
   const email = extractEmail(idToken);
   const roles = extractRoles(accessToken);
 
-  // 무서명 쿠키에서 꺼낸 값이라 저장 시점 검증을 믿지 않고 사용 직전 다시 검증한다(최종 방어선)
+  // 무서명 쿠키에서 꺼낸 값이라 저장 시점 검증을 믿지 않고 사용 직전 다시 검증한다(최종 방어선).
+  // returnTo는 앱 좌표계(basePath 없음)로 검증된다 — 검증을 모두 통과한 값에 경계에서 1회만
+  // BASE_PATH를 접두한다. 저장 시점에 접두하면 safeReturnTo의 `//`·`\`·`:` 문자열 방어가
+  // 접두 뒤로 밀려 무력화된다(오픈 리다이렉트 방어 순서 — 검증 먼저, 접두 나중).
   const returnTo = safeReturnTo(pkcePayload.returnTo);
-  const response = NextResponse.redirect(new URL(returnTo, request.url));
+  const response = NextResponse.redirect(new URL(`${BASE_PATH}${returnTo}`, request.url));
 
   // mm_pkce_verifier는 여기서 최종 삭제(one-time use) — 교환 성공/실패 모든 경로에서 정리됨
   response.cookies.set(COOKIE_PKCE, '', { ...COOKIE_EXPIRE_OPTIONS, maxAge: 0 });
