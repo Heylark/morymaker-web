@@ -14,8 +14,12 @@ describe('getAuthMode — 3분법 판정 (PUBLIC-prefix 메서드 무관 + fail-
     expect(getAuthMode('/api/public/x', 'POST')).toBe('public');
   });
 
-  it('/actuator/health (GET) → public', () => {
-    expect(getAuthMode('/actuator/health', 'GET')).toBe('public');
+  it('/api/actuator/health (GET) → public (context-path 이전 후 좌표계 — api 외부 URL 기준)', () => {
+    expect(getAuthMode('/api/actuator/health', 'GET')).toBe('public');
+  });
+
+  it('/actuator/health (구 좌표, context-path 미포함) → private (더 이상 매치되지 않음)', () => {
+    expect(getAuthMode('/actuator/health', 'GET')).toBe('private');
   });
 
   it('leading slash 없어도 동일 판정', () => {
