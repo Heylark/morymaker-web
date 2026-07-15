@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * 콘솔 행사 현황(ADM-03) 모바일(375px) 반응형 스모크 — -07이 확립한 하단 탭바 셸에 통계

@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * 콘솔 계정·권한(ADM-11) — SYSTEM_ADMIN 전용 auth `/api/accounts` 소비 회귀 + 게이트 프리미티브

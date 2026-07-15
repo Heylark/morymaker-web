@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * 키오스크 다크 시그니처 회귀 — KIO-00~06 전 상태를 실제 데이터로 순회하며 DOM 가시성 +

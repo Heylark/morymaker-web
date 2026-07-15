@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * 콘솔 셸 375px 반응형 회귀 가드 — 좁은 뷰포트에서 사이드바가 화면을 압착해 콘텐츠가 컨테이너

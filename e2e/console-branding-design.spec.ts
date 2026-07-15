@@ -1,4 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, BASE_PATH } from './fixtures';
+import type { Page } from '@playwright/test';
 
 /**
  * 콘솔 브랜딩·대기화면(ADM-04) 신규 도메인 검증 — 요소별 4컬러 피커·자족 프리뷰 실시간 반영·
@@ -64,7 +65,9 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
 
     await expect(page.getByRole('link', { name: '브랜딩', exact: true }).first()).toHaveAttribute(
       'href',
-      `/events/${EID}/branding`,
+      // <Link>가 렌더하는 실제 DOM href는 basePath가 자동 접두된 외부 좌표계 값이다(Next.js가
+      // Link 컴포넌트를 basePath 인지 <a> 태그로 해석 — JS 없이도 앵커만으로 항해 가능해야 하므로).
+      `${BASE_PATH}/events/${EID}/branding`,
     );
     await expect(page.getByRole('heading', { name: '브랜딩 · 대기화면' })).toBeVisible();
     await expect(page.getByRole('heading', { name: '행사 브랜딩 컬러' })).toBeVisible();
