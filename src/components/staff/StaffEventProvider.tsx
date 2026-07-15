@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useEffect, useState } from 'react';
+import { BASE_PATH } from '@/lib/base-path';
 
 export type StaffEventState =
   | { status: 'loading' }
@@ -36,7 +37,8 @@ export function StaffEventProvider({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/auth/me', { signal: controller.signal })
+    // 브라우저 fetch는 basePath를 자동으로 붙이지 않는다 — 명시 접두 필수(경계 지점).
+    fetch(`${BASE_PATH}/api/auth/me`, { signal: controller.signal })
       .then((r) => r.json())
       .then((body: MeResponse) => {
         const eventIds = body.user?.eventIds ?? null;

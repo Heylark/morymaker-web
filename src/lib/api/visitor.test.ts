@@ -23,7 +23,7 @@ describe('lib/api/visitor — BFF 프록시 경유 방문자 공개 도메인 �
 
     const result = await getHub('tok 1');
 
-    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/public/u/tok%201', undefined);
+    expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/public/u/tok%201', undefined);
     expect(result).toEqual(hub);
   });
 
@@ -42,7 +42,7 @@ describe('lib/api/visitor — BFF 프록시 경유 방문자 공개 도메인 �
     const result = await preregPlate('tok1', '12가3456');
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/public/u/tok1/prereg-plate');
+    expect(url).toBe('/app/api/proxy/api/public/u/tok1/prereg-plate');
     expect(init?.method).toBe('POST');
     expect(JSON.parse(init?.body as string)).toEqual({ plate: '12가3456' });
     expect(result).toEqual({ plate: '12가3456', message: '등록되었습니다' });
@@ -63,7 +63,7 @@ describe('lib/api/visitor — BFF 프록시 경유 방문자 공개 도메인 �
 
     const result = await getOnsiteForm('evt code');
 
-    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/public/r/evt%20code', undefined);
+    expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/public/r/evt%20code', undefined);
     expect(result).toEqual({ event: { name: '행사', bgColor: null, pointColor: null } });
   });
 
@@ -88,7 +88,7 @@ describe('lib/api/visitor — BFF 프록시 경유 방문자 공개 도메인 �
     const result = await registerOnsite('evt1', request);
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/public/r/evt1');
+    expect(url).toBe('/app/api/proxy/api/public/r/evt1');
     expect(init?.method).toBe('POST');
     expect(JSON.parse(init?.body as string)).toEqual(request);
     expect(result).toEqual(registerResult);
@@ -127,7 +127,7 @@ describe('lib/api/visitor — BFF 프록시 경유 방문자 공개 도메인 �
 
     const result = await getSlotView('z1 01');
 
-    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/public/p/z1%2001', undefined);
+    expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/public/p/z1%2001', undefined);
     expect(result).toEqual(slotView);
     expect(result.viewType).toBe('SELF_PARK_FORM'); // 축약형('SELF') 아님을 실측 고정
   });
@@ -163,7 +163,7 @@ describe('lib/api/visitor — BFF 프록시 경유 방문자 공개 도메인 �
     const result = await selfPark('z1-01', request);
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/public/p/z1-01/park');
+    expect(url).toBe('/app/api/proxy/api/public/p/z1-01/park');
     expect(init?.method).toBe('POST');
     expect(JSON.parse(init?.body as string)).toEqual(request);
     expect(result).toEqual(parkResult);
@@ -229,7 +229,7 @@ describe('lib/api/visitor — BFF 프록시 경유 방문자 공개 도메인 �
     await selfPark('z1-01', { plate: '12가3456', token: 'hub-token' });
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/public/p/z1-01/park'); // token이 query로 붙지 않음
+    expect(url).toBe('/app/api/proxy/api/public/p/z1-01/park'); // token이 query로 붙지 않음
     expect(JSON.parse(init?.body as string)).toMatchObject({ token: 'hub-token' });
   });
 });

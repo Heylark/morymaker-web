@@ -31,7 +31,7 @@ describe('lib/api/console — BFF 프록시 경유 관리자 콘솔 주차 구�
 
     const result = await listZones('evt-1');
 
-    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/events/evt-1/parking-zones', undefined);
+    expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/events/evt-1/parking-zones', undefined);
     expect(result).toEqual(zones);
   });
 
@@ -42,7 +42,7 @@ describe('lib/api/console — BFF 프록시 경유 관리자 콘솔 주차 구�
     const result = await createZone('evt-1', CREATE_REQUEST);
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/events/evt-1/parking-zones');
+    expect(url).toBe('/app/api/proxy/api/events/evt-1/parking-zones');
     expect(init?.method).toBe('POST');
     expect(JSON.parse(init?.body as string)).toEqual(CREATE_REQUEST);
     expect(result).toEqual(created);
@@ -55,7 +55,7 @@ describe('lib/api/console — BFF 프록시 경유 관리자 콘솔 주차 구�
     const result = await updateZone('evt-1', 'z1', request);
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/events/evt-1/parking-zones/z1');
+    expect(url).toBe('/app/api/proxy/api/events/evt-1/parking-zones/z1');
     expect(init?.method).toBe('PUT');
     expect(JSON.parse(init?.body as string)).toEqual(request);
     expect(result).toMatchObject({ id: 'z1' });
@@ -67,7 +67,7 @@ describe('lib/api/console — BFF 프록시 경유 관리자 콘솔 주차 구�
 
     const result = await listSlotsForQr('evt-1', 'z1');
 
-    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/events/evt-1/parking-zones/z1/slots', undefined);
+    expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/events/evt-1/parking-zones/z1/slots', undefined);
     expect(result).toEqual(slots);
   });
 
@@ -80,7 +80,7 @@ describe('lib/api/console — BFF 프록시 경유 관리자 콘솔 주차 구�
 
     const result = await downloadZoneQrZip('evt-1', 'z1');
 
-    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/events/evt-1/parking-zones/z1/qr-zip', undefined);
+    expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/events/evt-1/parking-zones/z1/qr-zip', undefined);
     expect(result).toBe(zipResponse);
   });
 
@@ -108,7 +108,7 @@ describe('lib/api/console — BFF 프록시 경유 관리자 콘솔 행사 함�
 
     const result = await listEvents();
 
-    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/events', undefined);
+    expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/events', undefined);
     expect(result).toEqual(events);
   });
 
@@ -118,7 +118,7 @@ describe('lib/api/console — BFF 프록시 경유 관리자 콘솔 행사 함�
 
     const result = await getEvent('evt-1');
 
-    expect(fetch).toHaveBeenCalledWith('/api/proxy/api/events/evt-1', undefined);
+    expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/events/evt-1', undefined);
     expect(result).toEqual(event);
   });
 
@@ -143,7 +143,7 @@ describe('lib/api/console — BFF 프록시 경유 관리자 콘솔 행사 함�
     const result = await createEvent(EVENT_CREATE_REQUEST);
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/events');
+    expect(url).toBe('/app/api/proxy/api/events');
     expect(init?.method).toBe('POST');
     expect(JSON.parse(init?.body as string)).toEqual(EVENT_CREATE_REQUEST);
     expect(result).toEqual(created);
@@ -156,7 +156,7 @@ describe('lib/api/console — BFF 프록시 경유 관리자 콘솔 행사 함�
     const result = await updateEvent('evt-1', request);
 
     const [url, init] = vi.mocked(fetch).mock.calls[0];
-    expect(url).toBe('/api/proxy/api/events/evt-1');
+    expect(url).toBe('/app/api/proxy/api/events/evt-1');
     expect(init?.method).toBe('PUT');
     expect(JSON.parse(init?.body as string)).toEqual(request);
     expect(result).toMatchObject({ id: 'evt-1' });
