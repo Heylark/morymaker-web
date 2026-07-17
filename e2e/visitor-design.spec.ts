@@ -261,3 +261,149 @@ test('VIS-03 완료 — 주차완료 위치 텍스트가 실제로 읽힌다(회
 
   expect(backgroundClip, 'background-clip이 text가 아니면 위치 텍스트가 금색 사각형에 가려 불가독').toBe('text');
 });
+
+// ── 행사 액센트 색 런타임 주입 ────────────────────────────────────────────────
+/**
+ * 콘솔에 저장된 pointColor 1개가 게스트 3표면(VIS-00/01/02)의 액센트 문구·주 CTA에 실제로
+ * 반영되는지 getComputedStyle로 실측한다. 스크린샷 육안 대조는 이 파일 위쪽의 background-clip
+ * 함정처럼 캐스케이드 결함을 놓친 전례가 있어, 색 계열 검증은 계산값 대조를 우선한다.
+ * 기대값은 실제 브라우저(color-mix 해석 후) 실측치를 그대로 고정했다 — hi/lo 정지점은
+ * oklab() 함수 표기로 직렬화되고 base 정지점만 rgb로 남는다(브라우저 정규화 방식).
+ */
+const BRANDED_POINT_COLOR = '#B04A5A'; // 디자인 규약이 행사 브랜딩 정본 예시로 못박은 버건디
+const BRANDED_ACCENT_RGB = 'rgb(176, 74, 90)';
+const DEFAULT_GOLD_RGB = 'rgb(212, 179, 106)';
+const DEFAULT_GOLD_GRADIENT =
+  'linear-gradient(135deg, rgb(240, 220, 168) 0%, rgb(212, 179, 106) 45%, rgb(156, 124, 60) 100%)';
+const INK_WHITE_RGB = 'rgb(255, 255, 255)'; // 어두운 브랜드 색(버건디) → 흰 잉크
+const INK_DARK_RGB = 'rgb(20, 16, 10)'; // 시스템 골드 기본 잉크(밝은 색 전제)
+
+/** 화면에 렌더된 첫 액센트 문구(.text-primary) 요소의 계산된 글자색. */
+async function accentTextColor(page: Page) {
+  return page.evaluate(() => {
+    const el = document.querySelector('.text-primary') as HTMLElement | null;
+    return el ? getComputedStyle(el).color : null;
+  });
+}
+
+/** 주 CTA(SubmitButton → .btn-gold)의 배경 그라데이션·글자색. */
+async function submitButtonStyle(page: Page) {
+  return page.evaluate(() => {
+    const btn = document.querySelector('button[type="submit"]') as HTMLElement | null;
+    return btn
+      ? { backgroundImage: getComputedStyle(btn).backgroundImage, color: getComputedStyle(btn).color }
+      : null;
+  });
+}
+
+test('TC-BR-01 VIS-00 개인허브 — 저장색이 액센트 문구에 반영된다', async ({ page }) => {
+  const token = 'e2e-hub-token-branded';
+  const fixture: PublicHub = {
+    ...hubFixture,
+    checkinQr: { url: `https://morymaker.example.com/u/${token}`, token },
+    event: { ...hubFixture.event, pointColor: BRANDED_POINT_COLOR },
+  };
+  await mockJson(page, `**/api/proxy/api/public/u/${token}`, 200, { data: fixture });
+
+  await page.goto(`/u/${token}`);
+  await expect(page.getByText('김도윤')).toBeVisible();
+  expect(await accentTextColor(page)).toBe(BRANDED_ACCENT_RGB);
+  await page.screenshot({ path: 'test-screenshots/req-0031-vis00-hub-branded.png', fullPage: true });
+});
+
+test('TC-BR-02 VIS-00 개인허브 — 색 미저장 행사는 액센트 문구가 기본 골드를 유지한다', async ({ page }) => {
+  await mockJson(page, `**/api/proxy/api/public/u/${HUB_TOKEN}`, 200, { data: hubFixture });
+
+  await page.goto(`/u/${HUB_TOKEN}`);
+  await expect(page.getByText('김도윤')).toBeVisible();
+  expect(await accentTextColor(page)).toBe(DEFAULT_GOLD_RGB);
+});
+
+test('TC-BR-03 VIS-01 자리 승계확인 — 저장색이 안내 문구 + 주 CTA에 반영된다', async ({ page }) => {
+  const fixture: PublicSlotView = {
+    ...slotOccupiedFixture,
+    slot: { slotCode: 'z1-br03', slotSig: 'sig-br03', display: '지하 2층 A구역 9' },
+    event: { ...slotOccupiedFixture.event, pointColor: BRANDED_POINT_COLOR },
+  };
+  await mockJson(page, '**/api/proxy/api/public/p/z1-br03', 200, { data: fixture });
+
+  await page.goto('/p/z1-br03');
+  await expect(page.getByText('이미 주차 기록이 있는 자리입니다')).toBeVisible();
+  expect(await accentTextColor(page)).toBe(BRANDED_ACCENT_RGB);
+
+  await page.getByRole('button', { name: '그래도 제 차 등록' }).click();
+  await expect(page.getByText('지하 2층 A구역 9')).toBeVisible();
+  const cta = await submitButtonStyle(page);
+  expect(cta?.backgroundImage).toContain(BRANDED_ACCENT_RGB);
+  expect(cta?.backgroundImage).not.toBe(DEFAULT_GOLD_GRADIENT);
+  expect(cta?.color).toBe(INK_WHITE_RGB);
+  await page.screenshot({ path: 'test-screenshots/req-0031-vis01-parking-branded.png', fullPage: true });
+});
+
+test('TC-BR-04 VIS-01 자리 승계확인 — 색 미저장 행사는 안내 문구 + 주 CTA 모두 기본 골드', async ({ page }) => {
+  await mockJson(page, '**/api/proxy/api/public/p/z1-02', 200, { data: slotOccupiedFixture });
+
+  await page.goto('/p/z1-02');
+  await expect(page.getByText('이미 주차 기록이 있는 자리입니다')).toBeVisible();
+  expect(await accentTextColor(page)).toBe(DEFAULT_GOLD_RGB);
+
+  await page.getByRole('button', { name: '그래도 제 차 등록' }).click();
+  await expect(page.getByText('지하 2층 A구역 9')).toBeVisible();
+  const cta = await submitButtonStyle(page);
+  expect(cta?.backgroundImage).toBe(DEFAULT_GOLD_GRADIENT);
+  expect(cta?.color).toBe(INK_DARK_RGB);
+});
+
+test('TC-BR-05 VIS-02 현장등록 — 저장색이 주 CTA에 반영된다', async ({ page }) => {
+  const fixture: OnsiteForm = { event: { ...onsiteFormFixture.event, pointColor: BRANDED_POINT_COLOR } };
+  await mockJson(page, '**/api/proxy/api/public/r/branded-event', 200, { data: fixture });
+
+  await page.goto('/r/branded-event');
+  await expect(page.getByText('2026 VIP 초청 행사')).toBeVisible();
+  const cta = await submitButtonStyle(page);
+  expect(cta?.backgroundImage).toContain(BRANDED_ACCENT_RGB);
+  expect(cta?.backgroundImage).not.toBe(DEFAULT_GOLD_GRADIENT);
+  expect(cta?.color).toBe(INK_WHITE_RGB);
+  await page.screenshot({ path: 'test-screenshots/req-0031-vis02-onsite-branded.png', fullPage: true });
+});
+
+test('TC-BR-06 VIS-02 현장등록 — 색 미저장 행사는 주 CTA가 기본 골드 그라데이션을 유지한다', async ({ page }) => {
+  await mockJson(page, '**/api/proxy/api/public/r/demo-event', 200, { data: onsiteFormFixture });
+
+  await page.goto('/r/demo-event');
+  await expect(page.getByText('2026 VIP 초청 행사')).toBeVisible();
+  const cta = await submitButtonStyle(page);
+  expect(cta?.backgroundImage).toBe(DEFAULT_GOLD_GRADIENT);
+  expect(cta?.color).toBe(INK_DARK_RGB);
+});
+
+test('TC-BR-07 VIS-02 현장등록 — color-mix 미지원 브라우저는 주입을 생략하고 기본 골드로 안전 퇴화', async ({
+  page,
+}) => {
+  // CSS.supports를 스텁해 color-mix 미지원 브라우저를 위장한다. 섞기 함수를 모르는 브라우저는
+  // 그라데이션 배경을 통째로 무효 처리해 CTA 배경이 투명해지거나 글자가 사라지는데(구형 브라우저에서
+  // 실제로 벌어질 실패 모드), 그 대신 시스템 골드 그라데이션이 그대로 유지되어야 한다
+  // (투명·불가시가 아니라 기본 톤으로 안전 퇴화).
+  await page.addInitScript(() => {
+    const original = CSS.supports.bind(CSS);
+    // @ts-expect-error 테스트 전용 스텁 — color-mix 지원 질의만 선택적으로 미지원 위장
+    CSS.supports = (...args: Parameters<typeof CSS.supports>) => {
+      if (String(args).includes('color-mix')) return false;
+      return original(...args);
+    };
+  });
+  const fixture: OnsiteForm = { event: { ...onsiteFormFixture.event, pointColor: BRANDED_POINT_COLOR } };
+  await mockJson(page, '**/api/proxy/api/public/r/unsupported-event', 200, { data: fixture });
+
+  await page.goto('/r/unsupported-event');
+  await expect(page.getByText('2026 VIP 초청 행사')).toBeVisible();
+
+  const branded = await page.evaluate(() => !!document.querySelector('[data-event-branded]'));
+  expect(branded, '미지원 환경에서는 스코프 래퍼 자체가 생기지 않아야 한다').toBe(false);
+
+  const cta = await submitButtonStyle(page);
+  expect(cta?.backgroundImage, '배경이 투명해지지 않고 기본 골드 그라데이션을 유지해야 한다').toBe(
+    DEFAULT_GOLD_GRADIENT,
+  );
+  expect(cta?.color).toBe(INK_DARK_RGB);
+});
