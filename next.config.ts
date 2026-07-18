@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || "",
+  output: "standalone",
   turbopack: {
     // 워크트리 밖(컨테이너 공유 docs·tasks 등)을 가리키는 심볼릭 링크를 콘텐츠 스캔이
     // 해석하려다 "leaves the filesystem root" panic으로 죽지 않도록, 프로젝트 루트를
