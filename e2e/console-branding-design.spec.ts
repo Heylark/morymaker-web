@@ -21,6 +21,12 @@ import type { Page } from '@playwright/test';
 const EID = 'e757ba35-c62e-471a-99da-6f301abc3660';
 const RUN = Date.now();
 
+// 1×1 투명 PNG(유효한 magic byte) — 클라 kind 파생·서버 실 업로드 라운드트립 양쪽에 재사용.
+// 파일시스템 의존 없이 버퍼로 직접 주입해 워크트리 경로에 종속되지 않는다.
+const TINY_PNG_BASE64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+const TINY_PNG_BUFFER = Buffer.from(TINY_PNG_BASE64, 'base64');
+
 async function shot(page: Page, name: string) {
   await page.screenshot({ path: `test-screenshots/REQ-0018-04/${name}.png`, fullPage: true });
 }
@@ -192,13 +198,13 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
   });
 
   /**
-   * 대기화면 등록/수정 분기 — 삭제 어포던스 0 + update payload가 name·kind를 제외하는지.
-   * 목록/생성/수정 응답을 모의해(공유 DB에 orphan idle_content를 남기지 않음) UI 분기와 payload를
-   * 실측한다.
+   * 대기화면 삭제 어포던스 0 + 수정 — update payload가 name·kind를 제외하는지.
+   * 목록/수정 응답을 모의해(공유 DB에 orphan idle_content를 남기지 않음) UI 분기와 payload를
+   * 실측한다. (등록에 파일 업로드가 필수가 되면서 전송 방식이 FormData/multipart로 바뀌었다 —
+   * `route.request().postDataJSON()`은 JSON 바디 전제라 multipart를 파싱 못 하므로
+   * 등록 검증은 별도 테스트(파일 사전검증·실 업로드)로 분리했다.)
    */
-  test('대기화면 — 삭제 버튼 0 + 등록(name·kind 편집) + 수정(name·kind 읽기전용, payload 제외)', async ({
-    page,
-  }) => {
+  test('대기화면 — 삭제 버튼 0 + 수정(name·kind 읽기전용, payload 제외)', async ({ page }) => {
     await login(page);
 
     const item = {
@@ -210,25 +216,11 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
       fileUrl: null,
       sortOrder: 1,
     };
-    let capturedPost: Record<string, unknown> | null = null;
     let capturedUpdate: Record<string, unknown> | null = null;
 
     await page.route(`**/api/proxy/api/events/${EID}/idle-contents`, async (route) => {
-      const m = route.request().method();
-      if (m === 'GET') {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: [item] }) });
-        return;
-      }
-      if (m === 'POST') {
-        capturedPost = route.request().postDataJSON();
-        await route.fulfill({
-          status: 201,
-          contentType: 'application/json',
-          body: JSON.stringify({ data: { ...item, id: 'idle-e2e-new', ...(capturedPost as object) } }),
-        });
-        return;
-      }
-      await route.continue();
+      if (route.request().method() !== 'GET') return route.continue();
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: [item] }) });
     });
 
     await page.route(`**/api/proxy/api/events/${EID}/idle-contents/*`, async (route) => {
@@ -253,26 +245,15 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
     await expect(page.getByText('입장 안내', { exact: true })).toBeVisible();
     await shot(page, 'ADM-04-idle-list-no-delete');
 
-    // 등록 모달 — name·kind가 편집 가능(input/select).
-    await page.getByRole('button', { name: '콘텐츠 등록' }).click();
-    await expect(page.getByRole('heading', { name: '대기화면 콘텐츠 등록' })).toBeVisible();
-    await expect(page.getByLabel('이름 (필수)')).toBeVisible();
-    await page.getByLabel('이름 (필수)').fill(`E2E등록-${RUN}`);
-    await page.getByLabel('재생 옵션 (선택)').fill('자동재생');
-    await shot(page, 'ADM-04-idle-create-modal');
-    await page.getByRole('button', { name: '등록', exact: true }).click();
-
-    await expect.poll(() => capturedPost, { message: 'POST 요청 가로채짐' }).not.toBeNull();
-    expect((capturedPost as Record<string, unknown>).name, '등록은 name 포함').toBe(`E2E등록-${RUN}`);
-    expect((capturedPost as Record<string, unknown>).kind, '등록은 kind 포함').toBe('이미지');
-
-    // 수정 모달 — name·kind는 읽기전용 텍스트(편집 input 없음).
+    // 수정 모달 — name·kind는 읽기전용 텍스트(편집 input 없음, 파일 input도 없음).
     await page.getByRole('button', { name: '수정', exact: true }).first().click();
     await expect(page.getByRole('heading', { name: '대기화면 콘텐츠 수정' })).toBeVisible();
     await expect(page.getByLabel('이름 (필수)'), '수정 모달엔 이름 편집 input이 없어야 함').toHaveCount(0);
+    await expect(page.getByLabel('파일 (필수)'), '수정 모달엔 파일 input이 없어야 함').toHaveCount(0);
     // 정렬 순서만 바꿔 저장.
     await page.getByLabel('정렬 순서').fill('9');
     await shot(page, 'ADM-04-idle-edit-modal-readonly-name');
+    // 리스트의 "수정"(열기) 버튼과 모달 제출 "수정" 버튼이 동시에 DOM에 존재 — 마지막(모달) 것만 클릭.
     await page.getByRole('button', { name: '수정', exact: true }).last().click();
 
     await expect.poll(() => capturedUpdate, { message: 'PUT 요청 가로채짐' }).not.toBeNull();
@@ -284,5 +265,111 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
 
     await page.unroute(`**/api/proxy/api/events/${EID}/idle-contents/*`);
     await page.unroute(`**/api/proxy/api/events/${EID}/idle-contents`);
+  });
+
+  /**
+   * 대기화면 등록 — 클라이언트 사전검증 순수 UI 상태 확인. 네트워크 응답은 목록 GET만
+   * 모의(빈 목록)하고 POST는 발생시키지 않는다(제출 자체를 누르지 않음 — 사전검증 단계만 대상).
+   */
+  test('대기화면 등록 — 파일 미선택 시 제출 비활성화 + 미허용 MIME 에러 + 크기초과 에러 + 파일 선택 시 kind 자동파생', async ({
+    page,
+  }) => {
+    await login(page);
+
+    await page.route(`**/api/proxy/api/events/${EID}/idle-contents`, async (route) => {
+      if (route.request().method() !== 'GET') return route.continue();
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: [] }) });
+    });
+
+    await page.goto(`/events/${EID}/branding`);
+    await page.getByRole('button', { name: '콘텐츠 등록' }).click();
+    await expect(page.getByRole('heading', { name: '대기화면 콘텐츠 등록' })).toBeVisible();
+
+    const submitBtn = page.getByRole('button', { name: '등록', exact: true });
+    const fileInput = page.getByLabel('파일 (필수)');
+
+    // 파일 미선택 — 제출 버튼 비활성화(클라이언트 사전검증 게이트).
+    await expect(submitBtn).toBeDisabled();
+    await expect(page.getByText('파일을 선택하면 표시됩니다')).toBeVisible();
+
+    // 미허용 MIME(text/plain) — 클라 사전검증 에러 문구 + kind 미표시 + 제출 비활성 유지.
+    await fileInput.setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('not a media file') });
+    await expect(page.getByText('지원하지 않는 파일 형식입니다 (이미지: PNG·JPEG·WEBP / 영상: MP4·WEBM).')).toBeVisible();
+    await expect(submitBtn).toBeDisabled();
+    await shot(page, 'ADM-04-idle-create-mime-rejected');
+
+    // 이미지 20MB 초과 — 크기 사전검증 에러 문구(선언 MIME은 허용값 유지, 크기만 위반).
+    await fileInput.setInputFiles({
+      name: 'huge.png',
+      mimeType: 'image/png',
+      buffer: Buffer.alloc(21 * 1024 * 1024),
+    });
+    await expect(page.getByText('파일 크기가 너무 큽니다 (이미지 최대 20MB 이하).')).toBeVisible();
+    await expect(submitBtn).toBeDisabled();
+    await shot(page, 'ADM-04-idle-create-size-rejected');
+
+    // 유효한 이미지 — kind 자동 파생 표시 + 미리보기 렌더 + 제출 활성화.
+    await fileInput.setInputFiles({ name: 'valid.png', mimeType: 'image/png', buffer: TINY_PNG_BUFFER });
+    await expect(page.getByText('이미지', { exact: true })).toBeVisible();
+    await expect(page.getByRole('img', { name: '선택한 파일 미리보기' })).toBeVisible();
+    await expect(submitBtn).toBeEnabled();
+    await shot(page, 'ADM-04-idle-create-valid-kind-derived');
+  });
+
+  /**
+   * 대기화면 등록 — 실 업로드 왕복(콘솔 업로드 → 실 저장 → 키오스크 재생 완료 기준 핵심). multipart 전송이라
+   * postDataJSON()으로 필드를 가로챌 수 없어 이 테스트는 목(mock) 없이 실제 api까지 왕복시키고,
+   * 응답 JSON(kind 자동파생·fileUrl 절대 URL)을 실측한 뒤 **같은 fileUrl을 키오스크 대기화면이
+   * 실제로 로드하는지까지** 확인한다 — "콘솔 업로드 → 실 저장 → KIO-00 재생" 왕복 전체가 이
+   * 테스트 하나로 완결된다(사용자 증상 해소 증명, DEV-SANITY 핵심). DELETE 엔드포인트가 없어
+   * 생성한 콘텐츠는 정리되지 않는다(로컬 E2E 검증용 행사 e757ba35 — 운영 데이터 아님,
+   * console-branding-design 파일 상단 주석과 동일 전제).
+   */
+  test('대기화면 등록 — 실 파일 업로드 → 201 실측 → 키오스크 실 렌더 왕복 완결', async ({ page }) => {
+    await login(page);
+    await page.goto(`/events/${EID}/branding`);
+    await expect(page.getByRole('heading', { name: '대기화면 콘텐츠' })).toBeVisible();
+
+    await page.getByRole('button', { name: '콘텐츠 등록' }).click();
+    await page.getByLabel('이름 (필수)').fill(`E2E실업로드-${RUN}`);
+    await page.getByLabel('파일 (필수)').setInputFiles({ name: 'e2e-upload.png', mimeType: 'image/png', buffer: TINY_PNG_BUFFER });
+    await expect(page.getByText('이미지', { exact: true })).toBeVisible();
+    // 이 행사엔 이전 테스트 라운드에서 남은 콘텐츠가 누적돼 있다(DELETE 엔드포인트 없음 —
+    // 고정 음수(-1000 등)는 과거 라운드가 그보다 더 낮은 값을 썼을 경우 밀려날 수 있다는 게
+    // 실측으로 확인됨). IdlePlayer는 sortOrder 오름차순 목록의 첫 항목만 렌더하므로(다건 순환
+    // 없음, 범위 밖) 초 단위 타임스탬프의 음수로 매 실행마다 이전 누적 데이터보다 낮은 값을
+    // 만든다 — ⚠️ `-Date.now()`(ms, 13자리)는 서버 `sortOrder: Int`(Int32, 약 ±21억)를 오버플로해
+    // 400을 유발함을 실측 확인(2026-07-18) — 초 단위(~17억, Int32 안전 범위)로 교정.
+    await page.getByLabel('정렬 순서').fill(String(-Math.floor(Date.now() / 1000)));
+
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        (res) => res.url().includes(`/api/proxy/api/events/${EID}/idle-contents`) && res.request().method() === 'POST',
+      ),
+      page.getByRole('button', { name: '등록', exact: true }).click(),
+    ]);
+
+    expect(response.status(), '실 업로드는 201로 저장돼야 함(magic byte 검증 통과)').toBe(201);
+    const body = (await response.json()) as { data: Record<string, unknown> };
+    expect(body.data.name).toBe(`E2E실업로드-${RUN}`);
+    expect(body.data.kind, 'kind는 File.type에서 자동 파생됨').toBe('이미지');
+    // 포트는 로컬 api 기동 설정에 의존(고정값 아님) — 요구되는 건 "api 오리진 절대
+    // URL" 형태이지 특정 포트가 아니다.
+    expect(body.data.fileUrl, 'fileUrl은 api 오리진 절대 URL이어야 함').toMatch(
+      /^https?:\/\/localhost:\d+\/api\/public\/events\/.+\/idle-contents\/.+\/file$/,
+    );
+
+    await expect(page.getByText(`E2E실업로드-${RUN}`)).toBeVisible();
+    await shot(page, 'ADM-04-idle-create-real-upload-success');
+
+    // ── 왕복 완결: 같은 fileUrl을 키오스크 대기화면이 실제로 로드 ──────────────────
+    const fileUrl = body.data.fileUrl as string;
+    await page.goto(`/kiosk/${EID}`);
+    const img = page.locator(`img[src="${fileUrl}"]`);
+    await expect(img).toBeVisible();
+    await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.naturalWidth), {
+      message: '실 저장된 파일이 실제 픽셀로 디코드돼야 함(onError 폴백으로 새지 않았는지)',
+    }).toBeGreaterThan(0);
+    await shot(page, 'KIO-00-real-upload-round-trip-rendered');
   });
 });
