@@ -11,6 +11,17 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 /**
+ * E2E는 실제 배포 좌표계(/app)를 검증한다. basePath 미설정(.env.local 부재)이나 ''로 두면
+ * build subprocess와 goto가 동시에 '' 좌표계로 정렬돼 전량 GREEN이나 배포 좌표(/app)를 한 번도
+ * 밟지 않는 거짓 그린이 된다('' 좌표계 회귀는 vitest 단위 앵커가 별도 검증). 이 값을 process.env에
+ * authoritative하게 고정하면 (1) 아래 webServer가 process.env를 상속해 next build도 /app으로 굽고
+ * (2) fixtures.ts의 BASE_PATH(동일 프로세스)도 /app으로 정렬돼 build·test 좌표계가 대칭이 된다.
+ * webServer.env는 의도적으로 설정하지 않는다 — Playwright 버전에 따라 병합/치환 거동이 갈릴 수
+ * 있어(치환이면 PATH 소실로 build 파손) process.env 상속 경로만 사용해 모호성을 없앤다.
+ */
+process.env.NEXT_PUBLIC_BASE_PATH = '/app';
+
+/**
  * production 빌드(next build + next start)로 서버를 띄운다 — 개발 서버(next dev, Turbopack)는
  * 이 워크트리의 docs 심볼릭 링크를 만나면 파일시스템 샌드박스 패닉을 일으킨다(사전 존재 환경
  * 이슈, 이 REQ와 무관 — 관련 내용은 TASK_LOG 결정 로그 참조). production 빌드는 CSS를 빌드
@@ -21,7 +32,8 @@ dotenv.config({ path: '.env.local' });
 const PORT = process.env.PW_PORT ?? '3100';
 
 // e2e/fixtures.ts가 읽는 것과 동일 env — webServer 레디니스 체크에도 동일 좌표계가 필요하다.
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '';
+// 위에서 authoritative 고정했으므로 이제 항상 '/app'.
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH;
 
 export default defineConfig({
   testDir: './e2e',

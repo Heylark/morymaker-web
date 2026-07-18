@@ -1,0 +1,46 @@
+# web/.dockerignore — 빌드 컨텍스트에서 산출물·심볼릭 링크·시크릿·호스트 전용 경로를 제외한다.
+# ⚠️ .gitignore 감각을 그대로 옮기지 말 것 — 디렉터리명만 적으면 최상위 경로만 잡히고
+#    중첩 경로는 안 잡힌다. 전부 **/ 로 명시한다(api/.dockerignore 규율 동일 계승).
+# ⚠️ src/·config 파일을 광역 패턴으로 쓸어담지 않는다 — 아래 배제 목록은 전부 명시
+#    경로/확장자라 빌드 입력(package.json·pnpm-lock.yaml·next.config.ts·tsconfig.json·
+#    postcss.config.mjs·eslint.config.mjs·src/·.nvmrc)을 우발 배제하지 않는다.
+
+# 산출물·의존성 (host 바이너리 clobber 방지 최우선 — darwin-arm64 네이티브 모듈이 linux
+# 빌더를 clobber하면 빌드는 통과하고 런타임에만 invalid ELF header로 조용히 크래시한다)
+**/node_modules
+**/.next
+**/out
+**/build
+**/dist
+*.tsbuildinfo
+
+# 심링크 — 워크트리 밖 호스트 절대경로를 가리킨다(컨테이너 공유 docs, 55파일 금지 벤더명 포함)
+**/docs
+**/tasks
+
+# 워크트리에선 디렉터리가 아니라 gitdir 포인터 파일(호스트 절대경로 문자열)이다
+**/.git
+
+# 시크릿 — 실값 유출 경로 (.env.example은 실값이 없어 무해하나 같이 배제해도 무방)
+**/.env
+**/.env.*
+**/certs
+*.pem
+*.key
+
+# 테스트·툴링 (빌드 입력 아님)
+**/e2e
+**/test-results
+**/test-screenshots
+**/playwright-report
+**/.playwright-mcp
+playwright.config.ts
+vitest.config.ts
+**/scripts
+**/coverage
+
+# 에디터·OS·에이전트
+**/.DS_Store
+**/.idea
+**/.vscode
+**/.claude
