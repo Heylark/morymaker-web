@@ -73,6 +73,6 @@ EXPOSE 3000
 # 레디니스 폴링과 동일 좌표계). 판정은 docker inspect health status로만 단언할 것(호스트
 # curl 갈음 금지 — busybox wget 변종별 --spider 거동 차이를 흡수한다).
 HEALTHCHECK --start-period=10s --interval=30s --timeout=3s --retries=3 \
-  CMD wget -q --spider http://localhost:3000/app || exit 1
+  CMD wget -q --spider http://127.0.0.1:3000/app || exit 1
 
 ENTRYPOINT ["node", "server.js"]
