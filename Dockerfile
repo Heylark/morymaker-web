@@ -57,7 +57,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3000
+ENV PORT=50000
 # 0.0.0.0 필수 — standalone 기본 바인드(127.0.0.1)로 두면 컨테이너 내부 loopback
 # HEALTHCHECK는 통과하는데 httpd ProxyPass 등 외부 접근만 조용히 refused된다.
 ENV HOSTNAME=0.0.0.0
@@ -67,12 +67,12 @@ COPY --from=builder --chown=node:node /app/.next/static ./.next/static
 
 USER node
 
-EXPOSE 3000
+EXPOSE 50000
 
 # basePath=/app이라 GET / 는 404 — 앱 루트는 /app 하위에서 서빙된다(playwright webServer
 # 레디니스 폴링과 동일 좌표계). 판정은 docker inspect health status로만 단언할 것(호스트
 # curl 갈음 금지 — busybox wget 변종별 --spider 거동 차이를 흡수한다).
 HEALTHCHECK --start-period=10s --interval=30s --timeout=3s --retries=3 \
-  CMD wget -q --spider http://127.0.0.1:3000/app || exit 1
+  CMD wget -q --spider http://127.0.0.1:50000/app || exit 1
 
 ENTRYPOINT ["node", "server.js"]
