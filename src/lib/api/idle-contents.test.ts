@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createIdleContent } from './idle-contents';
+import { createIdleContent, deleteIdleContent } from './idle-contents';
 import type { IdleContentCreateRequest } from '@/types/idle-content';
 
 function jsonResponse(body: unknown, status = 201): Response {
@@ -78,5 +78,33 @@ describe('lib/api/idle-contents — createIdleContent (multipart 업로드)', ()
 
     const result = await createIdleContent('evt1', file, baseRequest());
     expect(result).toEqual(content);
+  });
+});
+
+/**
+ * deleteIdleContent가 lib/api/seats.ts deleteSeatGroup을 정확히 미러하는지 검증한다 — DELETE
+ * 메서드·경로변수(eid·cid) 조립·응답 {data:{cid}}에서 cid 반환까지 동일 계약이다(PATTERN-051 완결).
+ */
+describe('lib/api/idle-contents — deleteIdleContent', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  it('DELETE 메서드로 /api/events/{eid}/idle-contents/{cid}를 호출한다', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({ data: { cid: 'c1' } }, 200));
+
+    await deleteIdleContent('evt1', 'c1');
+
+    const [url, init] = vi.mocked(fetch).mock.calls[0];
+    expect(url).toBe('/app/api/proxy/api/events/evt1/idle-contents/c1');
+    expect(init?.method).toBe('DELETE');
+  });
+
+  it('200 응답 {data:{cid}}에서 cid를 반환한다', async () => {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({ data: { cid: 'c1' } }, 200));
+
+    const result = await deleteIdleContent('evt1', 'c1');
+
+    expect(result).toEqual({ cid: 'c1' });
   });
 });

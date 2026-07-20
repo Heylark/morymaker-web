@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/shared/Button';
+import { ConfirmDialog } from './ConfirmDialog';
 import { useIdleContents } from '@/hooks/useIdleContents';
 import { useCreateIdleContent } from '@/hooks/useCreateIdleContent';
 import { useUpdateIdleContent } from '@/hooks/useUpdateIdleContent';
+import { useDeleteIdleContent } from '@/hooks/useDeleteIdleContent';
 import type { IdleContent } from '@/types/kiosk';
 import type { IdleContentCreateRequest, IdleContentUpdateRequest } from '@/types/idle-content';
 
@@ -307,16 +309,18 @@ function IdleContentForm({ eid, open, content, onClose }: IdleContentFormProps) 
 }
 
 /**
- * 대기화면 콘텐츠 목록 + 등록/수정 오케스트레이션 — 카드 리스트 단일 렌더(행사당 콘텐츠 수가
- * 적어 SeatGroupList처럼 md 분기 이중 렌더는 불요, YAGNI — 콘솔 모바일 패턴의 dense 표만
- * 이중 렌더 대상). 삭제 버튼은 렌더하지 않는다 — DELETE 엔드포인트가 api에 없다
- * (idle-contents.ts 주석과 동일 근거, 실수로 존재하지 않는 동작을 노출하지 않는다).
- * 최상위 `<div>`(상위 BrandingClient·셸이 이미 `<main>`을 보유하므로 랜드마크 중복 방지).
+ * 대기화면 콘텐츠 목록 + 등록/수정/삭제 오케스트레이션 — 카드 리스트 단일 렌더(행사당 콘텐츠
+ * 수가 적어 SeatGroupList처럼 md 분기 이중 렌더는 불요, YAGNI — 콘솔 모바일 패턴의 dense 표만
+ * 이중 렌더 대상). 삭제는 SeatGroupList의 확인 다이얼로그 흐름을 그대로 미러링한다(danger 톤
+ * ConfirmDialog로 되돌리기 어려운 액션임을 알린 뒤에만 실행). 최상위 `<div>`(상위
+ * BrandingClient·셸이 이미 `<main>`을 보유하므로 랜드마크 중복 방지).
  */
 export function IdleContentManager({ eid }: IdleContentManagerProps) {
   const { data: contents, isLoading, isError } = useIdleContents(eid);
+  const deleteMutation = useDeleteIdleContent(eid);
   const [editingContent, setEditingContent] = useState<IdleContent | undefined>();
   const [formOpen, setFormOpen] = useState(false);
+  const [deletingContent, setDeletingContent] = useState<IdleContent | null>(null);
 
   const openCreate = () => {
     setEditingContent(undefined);
@@ -328,6 +332,12 @@ export function IdleContentManager({ eid }: IdleContentManagerProps) {
   };
   const closeForm = () => setFormOpen(false);
 
+  const confirmDelete = async () => {
+    if (!deletingContent) return;
+    await deleteMutation.mutateAsync({ cid: deletingContent.id });
+    setDeletingContent(null);
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -336,7 +346,6 @@ export function IdleContentManager({ eid }: IdleContentManagerProps) {
           콘텐츠 등록
         </Button>
       </div>
-      <p className="text-sm text-ink-muted">콘텐츠 삭제는 현재 지원되지 않습니다.</p>
 
       {isLoading && <p className="text-ink-muted">불러오는 중...</p>}
       {isError && <p className="text-danger">콘텐츠 목록을 불러오지 못했습니다.</p>}
@@ -356,15 +365,30 @@ export function IdleContentManager({ eid }: IdleContentManagerProps) {
                   {content.sortOrder}
                 </span>
               </div>
-              <Button variant="ghost" type="button" onClick={() => openEdit(content)}>
-                수정
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="ghost" type="button" onClick={() => openEdit(content)}>
+                  수정
+                </Button>
+                <Button variant="ghost" type="button" onClick={() => setDeletingContent(content)}>
+                  삭제
+                </Button>
+              </div>
             </li>
           ))}
         </ul>
       )}
 
       <IdleContentForm eid={eid} open={formOpen} content={editingContent} onClose={closeForm} />
+      <ConfirmDialog
+        open={deletingContent !== null}
+        title="대기화면 콘텐츠 삭제"
+        message={`"${deletingContent?.name ?? ''}" 콘텐츠를 삭제하면 되돌릴 수 없습니다. 계속할까요?`}
+        confirmLabel="삭제"
+        danger
+        pending={deleteMutation.isPending}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeletingContent(null)}
+      />
     </div>
   );
 }
