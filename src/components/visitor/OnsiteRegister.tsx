@@ -2,7 +2,7 @@
 
 import { useOnsiteForm } from '@/hooks/useOnsiteForm';
 import { VisitorApiError } from '@/lib/api/visitor';
-import { BrandingScope } from './BrandingScope';
+import { BrandingScope } from '@/components/branding/BrandingScope';
 import { NoticeView } from './NoticeView';
 import { OnsiteRegisterForm } from './OnsiteRegisterForm';
 

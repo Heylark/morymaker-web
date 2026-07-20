@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSlotView } from '@/hooks/useSlotView';
 import { VisitorApiError } from '@/lib/api/visitor';
-import { BrandingScope } from './BrandingScope';
+import { BrandingScope } from '@/components/branding/BrandingScope';
 import { NoticeView } from './NoticeView';
 import { ParkSelfForm } from './ParkSelfForm';
 
