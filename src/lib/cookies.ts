@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { isPublicSecure } from '@/lib/public-origin';
 
 /**
  * 쿠키 이름 상수 (5종, mm_ prefix).
@@ -14,13 +15,20 @@ export const COOKIE_ID_TOKEN = 'mm_id_token';
 export const COOKIE_ACCESS_TOKEN = 'mm_access_token';
 export const COOKIE_REFRESH_TOKEN = 'mm_refresh_token';
 
+/**
+ * 쿠키 secure 속성 — 공개(브라우저 도달) origin의 scheme이 https인지로 판정한다(모듈 로드
+ * 시점 1회 계산). NODE_ENV 단독 판정은 미설정·오설정 시 https 배포에서도 조용히 비보안
+ * 쿠키를 발급하는 함정이 있어, 실제 배포 transport와 직결된 기준으로 옮겼다.
+ */
+const SECURE = isPublicSecure();
+
 /** 세션 쿠키 공통 옵션 — refresh_token TTL(24h)에 맞춰 정렬한다(access token 자체 만료는 30분이지만 BFF가 선제 갱신한다). */
 export const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
   path: '/',
   maxAge: 60 * 60 * 24, // 24시간
   sameSite: 'lax' as const,
-  secure: process.env.NODE_ENV === 'production',
+  secure: SECURE,
 };
 
 /** 세션 쿠키 만료(삭제) 옵션 — 로그아웃/refresh 실패 시 사용 */
@@ -35,7 +43,7 @@ export const PKCE_COOKIE_OPTIONS = {
   path: '/',
   maxAge: 600,
   sameSite: 'lax' as const,
-  secure: process.env.NODE_ENV === 'production',
+  secure: SECURE,
 };
 
 /** mm_auth 쿠키에 담기는 게이트·표시용 사용자 정보 (event_ids는 의도적으로 포함하지 않는다 — api 응답을 신뢰) */
