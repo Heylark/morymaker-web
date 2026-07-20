@@ -72,8 +72,15 @@ export interface IdleContent {
   kind: string; // 한글('이미지'|'영상') — union 아님
   mode: string | null; // 'branded' | 'fullbleed' | null
   play: string | null; // 한글 자유 텍스트('자동재생'…) — union 절대 금지
-  fileUrl: string | null; // 1차 항상 null(FileStoragePort 스텁 — 실 미디어 저장은 후속)
+  fileUrl: string | null; // 미디어 미첨부 항목은 null(이름 텍스트 폴백) — 실 미디어 저장 활성 후 URL 채워짐
   sortOrder: number;
+}
+
+// ── 브랜딩 (GET /api/public/events/{eid}/branding) ────────────────────────────
+
+export interface KioskBranding {
+  pointColor: string | null; // 액센트 파생 소스(키오스크가 실제 소비하는 유일 값)
+  defaultIdleMode: string | null; // 응답 shape 정직 미러 — 현재 미소비(mode 분기 범위 외)
 }
 
 // 상태머신이 보유하는 정규화 타입(선택 결과 재사용용) — DTO alias

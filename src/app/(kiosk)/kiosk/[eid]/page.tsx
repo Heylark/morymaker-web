@@ -4,7 +4,9 @@ import { use, useReducer } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { initialKioskState, kioskReducer } from '@/lib/kiosk/machine';
 import { useIdleTimeout } from '@/hooks/useIdleTimeout';
+import { useKioskBranding } from '@/hooks/useKioskBranding';
 import { clearKioskSession, IDLE_TIMEOUT_MS, kioskKeys } from '@/lib/kiosk/constants';
+import { BrandingScope } from '@/components/branding/BrandingScope';
 import { KioskShell } from '@/components/kiosk/KioskShell';
 import { IdlePlayer } from '@/components/kiosk/IdlePlayer';
 import { KioskMenu } from '@/components/kiosk/KioskMenu';
@@ -47,6 +49,7 @@ export default function KioskPage({ params }: KioskPageProps) {
   const { eid } = use(params);
   const [state, dispatch] = useReducer(kioskReducer, initialKioskState);
   const queryClient = useQueryClient();
+  const { data: branding } = useKioskBranding(eid);
 
   function handleIdleTimeout() {
     // 무동작 타임아웃 개인정보 완전 초기화 3종: reducer RESET + RQ 캐시 제거 + 세션 저장소 clear.
@@ -63,7 +66,7 @@ export default function KioskPage({ params }: KioskPageProps) {
   }
 
   return (
-    <>
+    <BrandingScope pointColor={branding?.pointColor}>
       {state.screen !== 'idle' && (
         <nav className="flex w-full justify-between px-4 py-2 text-desk text-ink-muted">
           <button type="button" onClick={() => dispatch({ type: 'BACK_TO_MENU' })} className="min-h-touch">
@@ -107,6 +110,6 @@ export default function KioskPage({ params }: KioskPageProps) {
           <ParkLocationView record={state.selectedParking} />
         )}
       </KioskShell>
-    </>
+    </BrandingScope>
   );
 }

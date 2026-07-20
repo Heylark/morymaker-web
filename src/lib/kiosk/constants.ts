@@ -11,12 +11,18 @@ export const MIN_NAME_LENGTH = 2;
 /** 차량 뒷자리 4자리 — api 검증(`^\d{4}$`)과 동일 패턴을 클라에서도 게이트한다. */
 export const PLATE_TAIL_PATTERN = /^\d{4}$/;
 
+/** 대기화면 이미지·폴백 항목 노출 시간 — 영상은 자체 길이(onEnded)로 전환, 이미지·텍스트는 이 간격으로 순환한다. */
+export const IDLE_CYCLE_INTERVAL_MS = 8_000;
+
 /** React Query 쿼리키 접두 단일화 — RESET 시 `removeQueries({queryKey: kioskKeys.all})`로 PII 캐시 일괄 제거. */
 export const kioskKeys = {
   all: ['kiosk'] as const,
   attendees: (eid: string, name: string) => [...kioskKeys.all, 'attendees', eid, name] as const,
   parking: (eid: string, plateTail: string) => [...kioskKeys.all, 'parking', eid, plateTail] as const,
   idle: (eid: string) => [...kioskKeys.all, 'idle', eid] as const,
+  // 브랜딩은 비-PII라 무동작 타임아웃 RESET(kioskKeys.all 일괄 제거)에 함께 걸려도 무해하다 —
+  // idle 화면이 계속 마운트돼 있어 즉시 refetch되고, 짧은 액센트 flicker는 무시 가능하다.
+  branding: (eid: string) => [...kioskKeys.all, 'branding', eid] as const,
 };
 
 /**

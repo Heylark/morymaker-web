@@ -2,7 +2,7 @@
 
 import { useHub } from '@/hooks/useHub';
 import { VisitorApiError } from '@/lib/api/visitor';
-import { BrandingScope } from './BrandingScope';
+import { BrandingScope } from '@/components/branding/BrandingScope';
 import { CheckinQr } from './CheckinQr';
 import { InviteCard } from './InviteCard';
 import { NoticeView } from './NoticeView';
