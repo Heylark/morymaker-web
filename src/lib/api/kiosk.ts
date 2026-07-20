@@ -2,6 +2,7 @@ import { proxyFetch } from '@/lib/proxy-fetch';
 import type {
   IdleContent,
   KioskApiErrorBody,
+  KioskBranding,
   KioskCheckinResult,
   KioskListResponse,
   PublicAttendee,
@@ -81,5 +82,21 @@ export async function idleContents(eid: string): Promise<IdleContent[]> {
   const res = await proxyFetch(`api/public/events/${eid}/idle-contents`);
   if (!res.ok) return throwOnError(res);
   const body: { data: IdleContent[] } = await res.json();
+  return body.data;
+}
+
+// ── 브랜딩 (GET /api/public/events/{eid}/branding) ────────────────────────────
+
+/**
+ * 대기화면 액센트 색 소스 — 방문자 표면과 동일하게 pointColor 하나만 실제 소비한다.
+ * fail-closed(무효 eid 404·종료 행사 409)라 idle-contents(fail-open)와 달리 에러를 던질 수 있다 —
+ * 호출부(useKioskBranding)는 retry:false로 두고, 에러 시 데이터 부재로 BrandingScope가 주입을
+ * 접어 시스템 기본 골드로 안전 퇴화한다(색 없이도 화면은 정상 동작). 무효 eid는 각 화면 최초
+ * 액션의 404가 이미 대체 표면화하므로 브랜딩 에러가 독립적으로 흐름을 막지 않는다.
+ */
+export async function fetchKioskBranding(eid: string): Promise<KioskBranding> {
+  const res = await proxyFetch(`api/public/events/${eid}/branding`);
+  if (!res.ok) return throwOnError(res);
+  const body: { data: KioskBranding } = await res.json();
   return body.data;
 }
