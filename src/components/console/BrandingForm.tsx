@@ -21,12 +21,11 @@ interface BrandingFormProps {
 }
 
 /** 요소별 표시 전용 fallback hex — 게스트 다크 시그니처 기본색 근사(tokens.css 다크 값과 정합).
- * "미지정" 상태의 피커 표시에만 쓰이고, 사용자가 실제로 값을 바꾸기 전까지는 저장되지 않는다. */
+ * "미지정" 상태의 피커 표시에만 쓰이고, 사용자가 실제로 값을 바꾸기 전까지는 저장되지 않는다.
+ * titleColor·bodyColor는 편집 UI가 없어(공개 뷰 미소비 — 아래 폼 JSDoc 참조) 여기 없다. */
 const FALLBACK_HEX = {
   bgColor: '#08090c',
   pointColor: '#d4b36a',
-  titleColor: '#f0dca8',
-  bodyColor: '#ede9e0',
 };
 
 export function toFormValues(event: EventResponse): BrandingFormValues {
@@ -41,10 +40,12 @@ export function toFormValues(event: EventResponse): BrandingFormValues {
 }
 
 /**
- * 행사 브랜딩 컬러 폼 — 컬러 4종만 편집한다. `kv`·`defaultIdleMode`는 이 폼에 편집 UI가 없지만
- * 저장 payload에는 현재값을 그대로 라운드트립한다: PUT branding이 full-replace 의미일 경우
- * 컬러만 보내면 두 필드가 조용히 지워지므로(클로버), 폼 state가 6필드를 모두 들고 있다가
- * 제출 시 그대로 되돌려 보낸다.
+ * 행사 브랜딩 컬러 폼 — 컬러는 `bgColor`·`pointColor` 2종만 편집한다. 공개(게스트·키오스크) 뷰가
+ * 실제로 소비하는 색이 이 2종뿐이라 `titleColor`·`bodyColor`는 편집 UI를 걷어냈다(REQ-0031
+ * 인계 — 어떤 공개 컴포넌트도 두 색을 렌더에 쓰지 않는다는 실측). `titleColor`·`bodyColor`·
+ * `kv`·`defaultIdleMode`는 이 폼에 편집 UI가 없지만 저장 payload에는 현재값을 그대로
+ * 라운드트립한다: PUT branding이 full-replace 의미일 경우 편집한 색만 보내면 나머지 필드가
+ * 조용히 지워지므로(클로버), 폼 state가 6필드를 모두 들고 있다가 제출 시 그대로 되돌려 보낸다.
  *
  * `isDirty` 게이트로 저장 버튼·미저장 배지를 연동한다 — 브랜딩은 저장 즉시 라이브 반영(게스트
  * 파이프라인 배선 후) 대상이라 EventForm보다 "실수 저장 방지" 의도를 강하게 반영한다.
@@ -107,37 +108,11 @@ export function BrandingForm({ eid, event }: BrandingFormProps) {
             />
           )}
         />
-        <Controller
-          name="titleColor"
-          control={control}
-          render={({ field }) => (
-            <ElementColorPicker
-              label="제목색"
-              value={field.value}
-              fallback={FALLBACK_HEX.titleColor}
-              onChange={field.onChange}
-            />
-          )}
-        />
-        <Controller
-          name="bodyColor"
-          control={control}
-          render={({ field }) => (
-            <ElementColorPicker
-              label="본문색"
-              value={field.value}
-              fallback={FALLBACK_HEX.bodyColor}
-              onChange={field.onChange}
-            />
-          )}
-        />
       </div>
 
       <BrandingPreview
         bgColor={previewValues.bgColor ?? FALLBACK_HEX.bgColor}
         pointColor={previewValues.pointColor ?? FALLBACK_HEX.pointColor}
-        titleColor={previewValues.titleColor ?? FALLBACK_HEX.titleColor}
-        bodyColor={previewValues.bodyColor ?? FALLBACK_HEX.bodyColor}
       />
 
       <button
