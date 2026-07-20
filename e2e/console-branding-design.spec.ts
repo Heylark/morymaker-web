@@ -2,20 +2,23 @@ import { test, expect, BASE_PATH } from './fixtures';
 import type { Page } from '@playwright/test';
 
 /**
- * 콘솔 브랜딩·대기화면(ADM-04) 신규 도메인 검증 — 요소별 4컬러 피커·자족 프리뷰 실시간 반영·
- * null 왕복 보존·미저장 배지·PUT branding kv 클로버 방지(네트워크 레벨)·
- * 대기화면 등록/수정 분기(update payload name·kind 제외)가 실 로그인(OIDC)·실 서버로
- * 동작하는지 확인한다(cutover 직전 visual sanity 게이트 1차 입력).
+ * 콘솔 브랜딩·대기화면(ADM-04) 신규 도메인 검증 — 요소별 2컬러(배경·포인트) 피커·자족 프리뷰
+ * 실시간 반영·null 왕복 보존·미저장 배지·PUT branding kv 클로버 방지(네트워크 레벨)·
+ * 대기화면 등록/수정/삭제 분기(update payload name·kind 제외, delete 확인 다이얼로그 흐름)가
+ * 실 로그인(OIDC)·실 서버로 동작하는지 확인한다(cutover 직전 visual sanity 게이트 1차 입력).
+ * titleColor·bodyColor는 공개 뷰가 소비하지 않아(REQ-0031 인계) 편집 UI를 걷어냈다 — 폼이
+ * 두 필드를 여전히 라운드트립하는지는 kv 클로버 검증에서 함께 확인한다.
  *
  * 데이터: 좌석/명단 스펙과 동일한 로컬 개발 DB 이벤트 e757ba35-...(로컬 E2E 검증용 행사, 운영
- * 데이터 아님). 브랜딩 컬러는 이 행사에 이미 bgColor=#123456·pointColor=#abcdef가 지정돼 있고
- * titleColor·bodyColor는 null(미지정)이다 — null 왕복 케이스를 실데이터로 검증할 수 있다.
+ * 데이터 아님). 브랜딩 컬러는 이 행사에 이미 bgColor=#123456·pointColor=#abcdef가 지정돼 있어
+ * null 왕복 케이스는 GET 응답을 모의해 검증한다(실데이터가 둘 다 non-null이라 실데이터만으로는
+ * null 왕복을 재현할 수 없다).
  *
- * ⚠️ 파괴적 저장 회피: 브랜딩 실 PUT·대기화면 실 POST/PUT은 공유 개발 데이터를 변형하고
- * (대기화면은 DELETE 엔드포인트가 없어 정리 불가), 컬러 저장은 행사 색을 실제로 바꾼다. 따라서
- * "저장" 경로가 걸린 검증(kv 클로버·update payload)은 page.route로 응답을 모의해 payload만
- * 실측하고 실 DB는 건드리지 않는다(seats 스펙 "데이터 손실 봉인" 선례 동형). 실 렌더가 필요한
- * 검증(초기 렌더·피커·프리뷰·null 왕복·배지)은 저장을 누르지 않아 부작용이 없다.
+ * ⚠️ 파괴적 저장 회피: 브랜딩 실 PUT·대기화면 실 POST/PUT/DELETE는 공유 개발 데이터를 변형한다
+ * (컬러 저장은 행사 색을 실제로 바꾸고, 삭제는 되돌릴 수 없다). 따라서 "저장"·"삭제" 경로가
+ * 걸린 검증(kv 클로버·update payload·delete 호출)은 page.route로 응답을 모의해 payload·호출
+ * 여부만 실측하고 실 DB는 건드리지 않는다(seats 스펙 "데이터 손실 봉인" 선례 동형). 실 렌더가
+ * 필요한 검증(초기 렌더·피커·프리뷰·null 왕복·배지)은 저장을 누르지 않아 부작용이 없다.
  */
 
 const EID = 'e757ba35-c62e-471a-99da-6f301abc3660';
@@ -81,12 +84,16 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
     await shot(page, 'ADM-04-branding-initial');
   });
 
-  test('컬러 피커 4종 + 프리뷰 실시간 반영(bgColor 변경 → 프리뷰 배경 즉시 갱신)', async ({ page }) => {
+  test('컬러 피커 2종 + 프리뷰 실시간 반영(bgColor 변경 → 프리뷰 배경 즉시 갱신)', async ({ page }) => {
     await login(page);
     await page.goto(`/events/${EID}/branding`);
 
-    for (const label of ['배경색', '포인트색', '제목색', '본문색']) {
+    for (const label of ['배경색', '포인트색']) {
       await expect(pickerRow(page, label)).toBeVisible();
+    }
+    // titleColor·bodyColor는 공개 뷰 미소비라 편집 UI가 없다(REQ-0031 인계).
+    for (const label of ['제목색', '본문색']) {
+      await expect(page.getByLabel(label)).toHaveCount(0);
     }
 
     // 프리뷰 패널은 "행사 제목 미리보기"를 담은 div이고 배경이 인라인 style로 bgColor를 반영한다.
@@ -106,26 +113,54 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
 
   test('null 왕복 보존 + 미저장 배지 — 미변경 null은 되돌리기 버튼 없음', async ({ page }) => {
     await login(page);
-    await page.goto(`/events/${EID}/branding`);
 
-    // titleColor는 실데이터 null → "미지정" 표기 + 되돌리기 버튼 없음(아직 값이 없으므로).
-    const titleRow = pickerRow(page, '제목색');
-    await expect(titleRow.getByText('미지정', { exact: true })).toBeVisible();
-    await expect(titleRow.getByRole('button', { name: '미지정으로 되돌리기' })).toHaveCount(0);
+    // 실데이터는 bgColor·pointColor가 둘 다 값이 있어(#123456·#abcdef) null 왕복을 재현할 수
+    // 없다 — GET만 모의해 pointColor를 null로 만든다(이 테스트는 저장을 누르지 않으므로 PUT은
+    // 모의하지 않아도 됨 — 부작용 없음, 파일 상단 주석과 동일 전제).
+    const mockEvent = {
+      id: EID,
+      name: '2026 신년회',
+      eventDate: null,
+      place: null,
+      type: null,
+      status: '준비',
+      active: false,
+      bgColor: '#123456',
+      pointColor: null,
+      titleColor: null,
+      bodyColor: null,
+      kv: null,
+      defaultIdleMode: null,
+      smsPolicy: null,
+    };
+    await page.route(`**/api/proxy/api/events/${EID}`, async (route) => {
+      if (route.request().method() !== 'GET') return route.continue();
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: mockEvent }) });
+    });
+
+    await page.goto(`/events/${EID}/branding`);
+    await expect(page.getByRole('heading', { name: '행사 브랜딩 컬러' })).toBeVisible();
+
+    // pointColor는 모의 응답에서 null → "미지정" 표기 + 되돌리기 버튼 없음(아직 값이 없으므로).
+    const pointRow = pickerRow(page, '포인트색');
+    await expect(pointRow.getByText('미지정', { exact: true })).toBeVisible();
+    await expect(pointRow.getByRole('button', { name: '미지정으로 되돌리기' })).toHaveCount(0);
 
     // 초기엔 미저장 배지 없음.
     await expect(page.getByText('저장되지 않은 변경')).toHaveCount(0);
 
-    // 제목색을 지정 → 배지 등장 + 되돌리기 버튼 등장.
-    await page.getByLabel('제목색').fill('#00ff00');
+    // 포인트색을 지정 → 배지 등장 + 되돌리기 버튼 등장.
+    await page.getByLabel('포인트색').fill('#00ff00');
     await expect(page.getByText('저장되지 않은 변경')).toBeVisible();
-    await expect(titleRow.getByRole('button', { name: '미지정으로 되돌리기' })).toBeVisible();
+    await expect(pointRow.getByRole('button', { name: '미지정으로 되돌리기' })).toBeVisible();
     await shot(page, 'ADM-04-null-assigned-badge-shown');
 
     // "미지정으로 되돌리기" → 다시 null 표기로 복귀(왕복 보존).
-    await titleRow.getByRole('button', { name: '미지정으로 되돌리기' }).click();
-    await expect(titleRow.getByText('미지정', { exact: true })).toBeVisible();
-    await expect(titleRow.getByRole('button', { name: '미지정으로 되돌리기' })).toHaveCount(0);
+    await pointRow.getByRole('button', { name: '미지정으로 되돌리기' }).click();
+    await expect(pointRow.getByText('미지정', { exact: true })).toBeVisible();
+    await expect(pointRow.getByRole('button', { name: '미지정으로 되돌리기' })).toHaveCount(0);
+
+    await page.unroute(`**/api/proxy/api/events/${EID}`);
   });
 
   /**
@@ -191,20 +226,26 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
     expect(put.bgColor, '변경한 색은 반영돼야 함').toBe('#010203');
     expect(put.kv, 'kv가 라운드트립돼야 함(부분 전송으로 지워지면 클로버)').toBe(SENTINEL_KV);
     expect(put.defaultIdleMode, 'defaultIdleMode도 라운드트립돼야 함').toBe('branded');
-    // 편집 안 한 나머지 색은 원본 유지(titleColor·bodyColor는 null 그대로).
-    expect(put.titleColor, '미변경 null은 null 그대로 전송').toBeNull();
-    expect(put.bodyColor).toBeNull();
+    // 편집 UI가 없는 titleColor·bodyColor도 원본값 그대로 라운드트립된다(폼 state는 유지하고
+    // Controller JSX만 걷어낸 설계 — 편집 UI 부재가 곧 페이로드 누락으로 이어지지 않아야 함).
+    expect(
+      { titleColor: put.titleColor, bodyColor: put.bodyColor },
+      '편집 UI 없는 색도 원본값 그대로 라운드트립돼야 함',
+    ).toEqual({ titleColor: null, bodyColor: null });
     await shot(page, 'ADM-04-kv-clobber-guard-saved');
   });
 
   /**
-   * 대기화면 삭제 어포던스 0 + 수정 — update payload가 name·kind를 제외하는지.
-   * 목록/수정 응답을 모의해(공유 DB에 orphan idle_content를 남기지 않음) UI 분기와 payload를
-   * 실측한다. (등록에 파일 업로드가 필수가 되면서 전송 방식이 FormData/multipart로 바뀌었다 —
-   * `route.request().postDataJSON()`은 JSON 바디 전제라 multipart를 파싱 못 하므로
-   * 등록 검증은 별도 테스트(파일 사전검증·실 업로드)로 분리했다.)
+   * 대기화면 삭제(확인 다이얼로그 → DELETE 호출) + 수정 — update payload가 name·kind를
+   * 제외하는지. 목록/수정/삭제 응답을 모의해(공유 DB에 orphan idle_content를 남기거나 실 콘텐츠를
+   * 지우지 않음) UI 분기와 payload·호출 여부를 실측한다. (등록에 파일 업로드가 필수가 되면서
+   * 전송 방식이 FormData/multipart로 바뀌었다 — `route.request().postDataJSON()`은 JSON 바디
+   * 전제라 multipart를 파싱 못 하므로 등록 검증은 별도 테스트(파일 사전검증·실 업로드)로
+   * 분리했다.)
    */
-  test('대기화면 — 삭제 버튼 0 + 수정(name·kind 읽기전용, payload 제외)', async ({ page }) => {
+  test('대기화면 — 삭제 확인 다이얼로그(취소·확인) → DELETE 호출 + 수정(name·kind 읽기전용, payload 제외)', async ({
+    page,
+  }) => {
     await login(page);
 
     const item = {
@@ -217,6 +258,7 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
       sortOrder: 1,
     };
     let capturedUpdate: Record<string, unknown> | null = null;
+    const deletedCids: string[] = [];
 
     await page.route(`**/api/proxy/api/events/${EID}/idle-contents`, async (route) => {
       if (route.request().method() !== 'GET') return route.continue();
@@ -224,7 +266,8 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
     });
 
     await page.route(`**/api/proxy/api/events/${EID}/idle-contents/*`, async (route) => {
-      if (route.request().method() === 'PUT') {
+      const method = route.request().method();
+      if (method === 'PUT') {
         capturedUpdate = route.request().postDataJSON();
         await route.fulfill({
           status: 200,
@@ -233,17 +276,39 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
         });
         return;
       }
+      if (method === 'DELETE') {
+        deletedCids.push(route.request().url().split('/').pop() ?? '');
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: { cid: item.id } }) });
+        return;
+      }
       await route.continue();
     });
 
     await page.goto(`/events/${EID}/branding`);
     await expect(page.getByRole('heading', { name: '대기화면 콘텐츠' })).toBeVisible();
 
-    // 삭제 없음 안내 + 삭제 버튼 자체가 렌더되지 않음.
-    await expect(page.getByText('콘텐츠 삭제는 현재 지원되지 않습니다.')).toBeVisible();
-    await expect(page.getByRole('button', { name: '삭제' })).toHaveCount(0);
+    // "삭제 미지원" 안내 문구는 더는 렌더되지 않고, 삭제 버튼이 목록 행에 노출된다(PATTERN-051 완결).
+    await expect(page.getByText('콘텐츠 삭제는 현재 지원되지 않습니다.')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '삭제', exact: true })).toBeVisible();
     await expect(page.getByText('입장 안내', { exact: true })).toBeVisible();
-    await shot(page, 'ADM-04-idle-list-no-delete');
+    await shot(page, 'ADM-04-idle-list-delete-button');
+
+    // 삭제 클릭 → 확인 다이얼로그 노출 → 취소는 DELETE를 호출하지 않는다.
+    await page.getByRole('button', { name: '삭제', exact: true }).click();
+    await expect(page.getByRole('heading', { name: '대기화면 콘텐츠 삭제' })).toBeVisible();
+    await expect(page.getByText('"입장 안내" 콘텐츠를 삭제하면 되돌릴 수 없습니다. 계속할까요?')).toBeVisible();
+    await page.getByRole('button', { name: '취소', exact: true }).click();
+    await expect(page.getByRole('heading', { name: '대기화면 콘텐츠 삭제' })).toHaveCount(0);
+    expect(deletedCids, '취소 시 DELETE가 호출되지 않아야 함').toHaveLength(0);
+    await shot(page, 'ADM-04-idle-delete-confirm-dialog');
+
+    // 다시 삭제 → 확인 → DELETE 호출. 리스트의 "삭제"(연 버튼)와 다이얼로그의 확인 "삭제" 버튼이
+    // 동시에 DOM에 존재 — 수정 모달과 동일하게 마지막(다이얼로그) 것만 클릭한다.
+    await page.getByRole('button', { name: '삭제', exact: true }).click();
+    await page.getByRole('button', { name: '삭제', exact: true }).last().click();
+    await expect.poll(() => deletedCids.length, { message: 'DELETE 요청이 가로채져야 함' }).toBe(1);
+    expect(deletedCids[0], 'DELETE 경로가 삭제 대상 cid로 조립돼야 함').toBe(item.id);
+    await expect(page.getByRole('heading', { name: '대기화면 콘텐츠 삭제' })).toHaveCount(0);
 
     // 수정 모달 — name·kind는 읽기전용 텍스트(편집 input 없음, 파일 input도 없음).
     await page.getByRole('button', { name: '수정', exact: true }).first().click();
@@ -321,9 +386,10 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
    * postDataJSON()으로 필드를 가로챌 수 없어 이 테스트는 목(mock) 없이 실제 api까지 왕복시키고,
    * 응답 JSON(kind 자동파생·fileUrl 절대 URL)을 실측한 뒤 **같은 fileUrl을 키오스크 대기화면이
    * 실제로 로드하는지까지** 확인한다 — "콘솔 업로드 → 실 저장 → KIO-00 재생" 왕복 전체가 이
-   * 테스트 하나로 완결된다(사용자 증상 해소 증명, DEV-SANITY 핵심). DELETE 엔드포인트가 없어
-   * 생성한 콘텐츠는 정리되지 않는다(로컬 E2E 검증용 행사 e757ba35 — 운영 데이터 아님,
-   * console-branding-design 파일 상단 주석과 동일 전제).
+   * 테스트 하나로 완결된다(사용자 증상 해소 증명, DEV-SANITY 핵심). DELETE 엔드포인트가 생겼지만
+   * 이 테스트는 정리를 호출하지 않는다 — multipart 실 업로드 검증 자체가 목적이라 삭제 흐름은
+   * 위 삭제 테스트가 이미 모의 왕복으로 커버한다(로컬 E2E 검증용 행사 e757ba35 — 운영 데이터
+   * 아님, console-branding-design 파일 상단 주석과 동일 전제).
    */
   test('대기화면 등록 — 실 파일 업로드 → 201 실측 → 키오스크 실 렌더 왕복 완결', async ({ page }) => {
     await login(page);
@@ -334,9 +400,9 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
     await page.getByLabel('이름 (필수)').fill(`E2E실업로드-${RUN}`);
     await page.getByLabel('파일 (필수)').setInputFiles({ name: 'e2e-upload.png', mimeType: 'image/png', buffer: TINY_PNG_BUFFER });
     await expect(page.getByText('이미지', { exact: true })).toBeVisible();
-    // 이 행사엔 이전 테스트 라운드에서 남은 콘텐츠가 누적돼 있다(DELETE 엔드포인트 없음 —
-    // 고정 음수(-1000 등)는 과거 라운드가 그보다 더 낮은 값을 썼을 경우 밀려날 수 있다는 게
-    // 실측으로 확인됨). IdlePlayer는 sortOrder 오름차순 목록의 첫 항목만 렌더하므로(다건 순환
+    // 이 행사엔 이전 테스트 라운드에서 남은 콘텐츠가 누적돼 있다(이 테스트는 DELETE로 정리하지
+    // 않는다 — 위 JSDoc 참조. 고정 음수(-1000 등)는 과거 라운드가 그보다 더 낮은 값을 썼을 경우
+    // 밀려날 수 있다는 게 실측으로 확인됨). IdlePlayer는 sortOrder 오름차순 목록의 첫 항목만 렌더하므로(다건 순환
     // 없음, 범위 밖) 초 단위 타임스탬프의 음수로 매 실행마다 이전 누적 데이터보다 낮은 값을
     // 만든다 — ⚠️ `-Date.now()`(ms, 13자리)는 서버 `sortOrder: Int`(Int32, 약 ±21억)를 오버플로해
     // 400을 유발함을 실측 확인(2026-07-18) — 초 단위(~17억, Int32 안전 범위)로 교정.
