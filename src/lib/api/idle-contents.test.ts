@@ -83,7 +83,7 @@ describe('lib/api/idle-contents — createIdleContent (multipart 업로드)', ()
 
 /**
  * deleteIdleContent가 lib/api/seats.ts deleteSeatGroup을 정확히 미러하는지 검증한다 — DELETE
- * 메서드·경로변수(eid·cid) 조립·응답 {data:{cid}}에서 cid 반환까지 동일 계약이다(PATTERN-051 완결).
+ * 메서드·경로변수(eid·cid) 조립·응답 {data:{cid}}에서 cid 반환까지 동일 계약이다.
  */
 describe('lib/api/idle-contents — deleteIdleContent', () => {
   beforeEach(() => {

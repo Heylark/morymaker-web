@@ -41,8 +41,8 @@ export function toFormValues(event: EventResponse): BrandingFormValues {
 
 /**
  * 행사 브랜딩 컬러 폼 — 컬러는 `bgColor`·`pointColor` 2종만 편집한다. 공개(게스트·키오스크) 뷰가
- * 실제로 소비하는 색이 이 2종뿐이라 `titleColor`·`bodyColor`는 편집 UI를 걷어냈다(REQ-0031
- * 인계 — 어떤 공개 컴포넌트도 두 색을 렌더에 쓰지 않는다는 실측). `titleColor`·`bodyColor`·
+ * 실제로 소비하는 색이 이 2종뿐이라 `titleColor`·`bodyColor`는 편집 UI를 걷어냈다(어떤
+ * 공개 컴포넌트도 두 색을 렌더에 쓰지 않는다는 실측). `titleColor`·`bodyColor`·
  * `kv`·`defaultIdleMode`는 이 폼에 편집 UI가 없지만 저장 payload에는 현재값을 그대로
  * 라운드트립한다: PUT branding이 full-replace 의미일 경우 편집한 색만 보내면 나머지 필드가
  * 조용히 지워지므로(클로버), 폼 state가 6필드를 모두 들고 있다가 제출 시 그대로 되돌려 보낸다.

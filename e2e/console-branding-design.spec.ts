@@ -6,7 +6,7 @@ import type { Page } from '@playwright/test';
  * 실시간 반영·null 왕복 보존·미저장 배지·PUT branding kv 클로버 방지(네트워크 레벨)·
  * 대기화면 등록/수정/삭제 분기(update payload name·kind 제외, delete 확인 다이얼로그 흐름)가
  * 실 로그인(OIDC)·실 서버로 동작하는지 확인한다(cutover 직전 visual sanity 게이트 1차 입력).
- * titleColor·bodyColor는 공개 뷰가 소비하지 않아(REQ-0031 인계) 편집 UI를 걷어냈다 — 폼이
+ * titleColor·bodyColor는 공개 뷰가 소비하지 않아 편집 UI를 걷어냈다 — 폼이
  * 두 필드를 여전히 라운드트립하는지는 kv 클로버 검증에서 함께 확인한다.
  *
  * 데이터: 좌석/명단 스펙과 동일한 로컬 개발 DB 이벤트 e757ba35-...(로컬 E2E 검증용 행사, 운영
@@ -91,7 +91,7 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
     for (const label of ['배경색', '포인트색']) {
       await expect(pickerRow(page, label)).toBeVisible();
     }
-    // titleColor·bodyColor는 공개 뷰 미소비라 편집 UI가 없다(REQ-0031 인계).
+    // titleColor·bodyColor는 공개 뷰 미소비라 편집 UI가 없다.
     for (const label of ['제목색', '본문색']) {
       await expect(page.getByLabel(label)).toHaveCount(0);
     }
@@ -287,7 +287,7 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
     await page.goto(`/events/${EID}/branding`);
     await expect(page.getByRole('heading', { name: '대기화면 콘텐츠' })).toBeVisible();
 
-    // "삭제 미지원" 안내 문구는 더는 렌더되지 않고, 삭제 버튼이 목록 행에 노출된다(PATTERN-051 완결).
+    // "삭제 미지원" 안내 문구는 더는 렌더되지 않고, 삭제 버튼이 목록 행에 노출된다.
     await expect(page.getByText('콘텐츠 삭제는 현재 지원되지 않습니다.')).toHaveCount(0);
     await expect(page.getByRole('button', { name: '삭제', exact: true })).toBeVisible();
     await expect(page.getByText('입장 안내', { exact: true })).toBeVisible();
