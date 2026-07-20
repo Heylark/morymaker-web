@@ -12,6 +12,7 @@ import {
 import { extractEmail, extractRoles } from '@/lib/tokens';
 import { safeReturnTo } from '@/lib/return-to';
 import { BASE_PATH } from '@/lib/base-path';
+import { getPublicOrigin } from '@/lib/public-origin';
 
 interface PkceCookiePayload {
   verifier: string;
@@ -31,9 +32,14 @@ interface TokenResponse {
  *
  * ⚠️ Route Handler의 NextResponse.redirect는 basePath를 자동으로 붙이지 않는다(Server
  *    Component redirect()와 다름) — 여기가 그 경계라 명시 접두가 필수다.
+ *
+ * ⚠️ base로 request.url을 직접 쓰지 않는다 — 리버스 프록시 뒤 standalone 서버에서는
+ *    request.url이 브라우저가 접속한 공개 주소가 아니라 서버 자신의 bind 주소로 인식되어
+ *    브라우저가 도달 못 하는 origin으로 리다이렉트가 샌다. getPublicOrigin이 배포 env
+ *    기준으로 공개 origin을 도출하고, request.url은 그 안에서 로컬 dev 최종 폴백으로만 쓰인다.
  */
 function redirectToLoginRetry(request: NextRequest): NextResponse {
-  const response = NextResponse.redirect(new URL(`${BASE_PATH}/oauth/login`, request.url));
+  const response = NextResponse.redirect(new URL(`${BASE_PATH}/oauth/login`, getPublicOrigin(request.url)));
   response.cookies.set(COOKIE_PKCE, '', { ...COOKIE_EXPIRE_OPTIONS, maxAge: 0 });
   return response;
 }
@@ -134,7 +140,7 @@ export async function GET(request: NextRequest) {
   // BASE_PATH를 접두한다. 저장 시점에 접두하면 safeReturnTo의 `//`·`\`·`:` 문자열 방어가
   // 접두 뒤로 밀려 무력화된다(오픈 리다이렉트 방어 순서 — 검증 먼저, 접두 나중).
   const returnTo = safeReturnTo(pkcePayload.returnTo);
-  const response = NextResponse.redirect(new URL(`${BASE_PATH}${returnTo}`, request.url));
+  const response = NextResponse.redirect(new URL(`${BASE_PATH}${returnTo}`, getPublicOrigin(request.url)));
 
   // mm_pkce_verifier는 여기서 최종 삭제(one-time use) — 교환 성공/실패 모든 경로에서 정리됨
   response.cookies.set(COOKIE_PKCE, '', { ...COOKIE_EXPIRE_OPTIONS, maxAge: 0 });
