@@ -57,13 +57,17 @@ test.describe('콘솔 셸 — 브랜딩 화면 모바일(375px) 반응형', () =
     await shot(page, 'mobile-ADM-04-branding-initial');
   });
 
-  test('컬러 피커 4종 375px 렌더 + 프리뷰 실시간 반영', async ({ page }) => {
+  test('컬러 피커 2종 375px 렌더 + 프리뷰 실시간 반영', async ({ page }) => {
     await login(page);
     await page.goto(`/events/${EID}/branding`);
     await assertNoOverflowNoDarkLeak(page);
 
-    for (const label of ['배경색', '포인트색', '제목색', '본문색']) {
+    for (const label of ['배경색', '포인트색']) {
       await expect(page.getByLabel(label)).toBeVisible();
+    }
+    // titleColor·bodyColor는 공개 뷰 미소비라 편집 UI가 없다(데스크톱 스펙과 동일 전제).
+    for (const label of ['제목색', '본문색']) {
+      await expect(page.getByLabel(label)).toHaveCount(0);
     }
     await page.getByLabel('포인트색').fill('#ff0000');
     const btn = page.getByText('참석 확인', { exact: true });

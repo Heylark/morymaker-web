@@ -26,3 +26,8 @@ export interface IdleContentUpdateRequest {
   play?: string | null;
   sortOrder?: number;
 }
+
+// DELETE /api/events/{eid}/idle-contents/{cid} → 200 {data: {cid}} — seat.ts SeatGroupDeleteResponse 미러
+export interface IdleContentDeleteResponse {
+  cid: string;
+}
