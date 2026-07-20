@@ -1,1 +1,248 @@
 @import "tailwindcss";
+
+/* 워크트리 밖(컨테이너 공유 docs·tasks)을 가리키는 심볼릭 링크를 Tailwind 자동 콘텐츠
+   스캔이 따라가려다 Turbopack이 "leaves the filesystem root" panic으로 죽는 문제 방지 —
+   두 심볼릭 링크를 스캔 대상에서 명시 제외한다(경로는 이 파일 기준 상대경로). */
+@source not "../../docs";
+@source not "../../tasks";
+
+/* 공유 primitives 클래스 층(버튼·배지·라벨·row·상태칩·QR 발광 박스·금선 프레임) —
+   컴포넌트별 .tsx 래퍼가 이 클래스들을 소비한다(src/components/shared/*.tsx 참조). */
+@import "../components/shared/primitives.css";
+
+/* Pretendard Variable — 한글 본문 + UI + 라틴 레이블 겸용. 패키지가 자체 제공하는 동적
+   유니코드 서브셋 분할본을 그대로 사용한다(문자 조합에 따라 필요한 조각만 내려받는다).
+   family 이름이 아래 --kr 스택과 정확히 일치해야 실제로 적용된다. */
+@import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
+
+/* Bodoni Moda — 세리프는 숫자·모노그램·짧은 디스플레이 전용이라 라틴(기본+확장) 두 서브셋만
+   자가호스팅한다(한글·키릴·그리스 등 미사용 서브셋 제외). 패키지가 배포하는 파일을 그대로
+   참조하되, family 이름은 아래 --serif 스택과 맞추기 위해 여기서 직접 등록한다(패키지 기본
+   등록명은 "Bodoni Moda Variable"이라 그대로 쓰면 토큰 문자열과 불일치해 폴백으로 새버린다). */
+@font-face {
+  font-family: "Bodoni Moda";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 900;
+  src: url("../../node_modules/@fontsource-variable/bodoni-moda/files/bodoni-moda-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: "Bodoni Moda";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 900;
+  src: url("../../node_modules/@fontsource-variable/bodoni-moda/files/bodoni-moda-latin-ext-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+/* ============================================================
+   RAW 토큰 층 — 값의 단일 출처(디자인 SSOT tokens.css)를 원명 그대로
+   옮겨온다. 이 층의 이름·값은 재논의 대상이 아니다 — SSOT가 갱신되면
+   이 블록을 다시 그대로 복사해 동기화한다. 런타임 테마 전환(다크/라이트,
+   키오스크 다크 고정)은 이 층의 `[data-theme]` 선택자가 담당한다.
+   ============================================================ */
+:root,
+[data-theme="dark"] {
+  /* 컬러 — 바탕 */
+  --void: #08090C;
+  --surface: #101318;
+  --card: #161A21;
+  --card-hi: #1C212B;
+  --qr-bg: #0B0D12;
+
+  /* 컬러 — 액센트(샴페인 골드) */
+  --champagne: #D4B36A;
+  --champagne-hi: #F0DCA8;
+  --champagne-lo: #9C7C3C;
+  --gold-grad: linear-gradient(135deg, #F0DCA8 0%, #D4B36A 45%, #9C7C3C 100%);
+  --btn-ink: #14100A;
+
+  /* 컬러 — 텍스트 */
+  --ivory: #EDE9E0;
+  --muted: #8B8E96;
+  --faint: #5A5D66;
+
+  /* 컬러 — 금선 hairline */
+  --line: rgba(212, 179, 106, .28);
+  --line-soft: rgba(212, 179, 106, .13);
+
+  /* 컬러 — 디바이스 프레임(액센트 무관 중립 구조색) */
+  --frame-border: #23262E;
+  --frame-ring: #0D0F14;
+  --frame-notch: #05060A;
+
+  /* 프레임 합성 그림자 */
+  --shadow-phone: 0 40px 80px -30px rgba(0, 0, 0, .9), 0 0 0 6px var(--frame-ring), inset 0 1px 0 rgba(237, 233, 224, .05);
+  --shadow-kiosk: 0 50px 100px -40px rgba(0, 0, 0, .95), 0 0 0 8px var(--frame-ring);
+
+  /* 앰비언트 배경(요소 발광 아님 — 예산 미계상) */
+  --ambient-page: radial-gradient(1200px 700px at 50% -200px, rgba(212, 179, 106, .06), transparent 60%);
+  --ambient-kiosk: radial-gradient(900px 420px at 50% 120%, rgba(212, 179, 106, .07), transparent 60%);
+
+  /* 초대장 씬 한정 광택 스윕 틴트(발광 아님 — 모션) */
+  --sheen-tint: rgba(240, 220, 168, .055);
+
+  /* 발광(glow) 예산 토큰 — 화면당 발광 주체 1개 원칙 */
+  --glow-qr: drop-shadow(0 0 22px rgba(212, 179, 106, .20));
+  --glow-qr-peak: drop-shadow(0 0 34px rgba(212, 179, 106, .32));
+  --glow-num: drop-shadow(0 0 36px rgba(212, 179, 106, .25));
+  --glow-cta: 0 10px 26px -10px rgba(212, 179, 106, .45);
+
+  /* 폼 에러·성공 상태색 — 다크 시그니처 웜톤에 맞춘 신규 토큰(채도 낮춘 웜 레드 / 뮤트 세이지) */
+  --danger: #C96A5E;
+  --success: #6FA07A;
+}
+
+/* ── 라이트 변주 (행사 단위 opt-in) — 디폴트는 항상 다크, 키오스크는 항상 다크 고정 ── */
+[data-theme="light"] {
+  --void: #F7F5EF;
+  --surface: #FFFFFF;
+  --card: #FDFCF9;
+  --card-hi: #FFFFFF;
+  --qr-bg: #FFFFFF;
+
+  --champagne: #8A6A1E;
+  --champagne-hi: #6E5416;
+  --champagne-lo: #B08B3A;
+  --gold-grad: linear-gradient(135deg, #B08B3A 0%, #8A6A1E 45%, #6E5416 100%);
+  --btn-ink: #FFFFFF;
+
+  --ivory: #1C1B17;
+  --muted: #5C5648;
+  --faint: #7A7468;
+
+  --line: rgba(138, 106, 30, .45);
+  --line-soft: rgba(138, 106, 30, .22);
+
+  --frame-border: #D8D4C8;
+  --frame-ring: #EAE6DA;
+  --frame-notch: #C7C2B4;
+
+  --shadow-phone: 0 30px 60px -30px rgba(28, 27, 23, .25), 0 0 0 6px var(--frame-ring), inset 0 1px 0 rgba(255, 255, 255, .6);
+  --shadow-kiosk: 0 40px 80px -40px rgba(28, 27, 23, .3), 0 0 0 8px var(--frame-ring);
+
+  --ambient-page: radial-gradient(1200px 700px at 50% -200px, rgba(138, 106, 30, .05), transparent 60%);
+  --ambient-kiosk: radial-gradient(900px 420px at 50% 120%, rgba(138, 106, 30, .05), transparent 60%);
+
+  --sheen-tint: rgba(138, 106, 30, .06);
+
+  /* 발광 → solid 대체(장식 발광은 다크에서만 럭셔리) — T1/T2 완전 제거 */
+  --glow-qr: none;
+  --glow-qr-peak: none;
+  --glow-num: none;
+  --glow-cta: 0 6px 16px -8px rgba(138, 106, 30, .35);
+
+  --danger: #A33228;
+  --success: #2F7D55;
+}
+
+/* ── 타이포 — 폰트 스택 · 타입 스케일 · 자간(테마 무관) ── */
+:root {
+  --serif: "Bodoni Moda", "Bodoni 72", Didot, "Times New Roman", serif;
+  --kr: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --sans-lat: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+
+  --fs-micro: 8px;
+  --fs-label-sm: 9px;
+  --fs-label: 9.5px;
+  --fs-hint: 11px;
+  --fs-eyebrow: 11px;
+  --fs-caption: 12px;
+  --fs-body-sm: 12.5px;
+  --fs-body: 15px;
+  --fs-state: 10.5px;
+  --fs-chip: 11.5px;
+  --fs-badge: 13px;
+  --fs-cta: 13.5px;
+  --fs-subhead: 17px;
+  --fs-num-sm: 15px;
+  --fs-num-md: 26px;
+  --fs-num-lg: clamp(64px, 11vw, 118px);
+  --fs-display: clamp(34px, 5vw, 52px);
+
+  --ls-tight: -.01em;
+  --ls-normal: .02em;
+  --ls-label: .28em;
+  --ls-eyebrow: .34em;
+  --ls-eyebrow-wide: .42em;
+  --ls-badge: .3em;
+  --ls-cta: .12em;
+  --ls-state: .14em;
+  --ls-chip: .04em;
+}
+
+/* ── 스페이싱 ── */
+:root {
+  --space-2: 2px;   --space-3: 3px;   --space-4: 4px;   --space-5: 5px;
+  --space-6: 6px;   --space-8: 8px;   --space-9: 9px;   --space-10: 10px;
+  --space-11: 11px; --space-12: 12px; --space-14: 14px; --space-16: 16px;
+  --space-18: 18px; --space-20: 20px; --space-22: 22px; --space-26: 26px;
+  --space-30: 30px; --space-34: 34px; --space-40: 40px; --space-44: 44px;
+  --space-48: 48px;
+
+  --gap: var(--space-18);
+  --pad-card: var(--space-22);
+}
+
+/* ── 모서리 — 럭셔리는 날카롭게(2~4px), 디바이스/필 형태는 예외 ── */
+:root {
+  --radius-sharp: 2px;
+  --radius-card: 3px;
+  --radius-frame: 4px;
+  --radius-pill: 20px;
+  --radius-notch: 8px;
+  --radius-kiosk: 10px;
+  --radius-phone: 30px;
+}
+
+/* ── 모션 — duration·easing(테마 무관) ── */
+:root {
+  --sheen-dur: 7s;
+  --breathe-dur: 3.6s;
+  --rise-dur: .9s;
+  --ease-rise: cubic-bezier(.2, .7, .2, 1);
+}
+
+/* ============================================================
+   @theme inline 브리지 층 — 기존 컴포넌트가 쓰는 Tailwind 유틸리티
+   네임스페이스(bg-primary, text-ink, rounded-card 등)를 위 RAW 토큰에
+   연결한다. `inline`이 필요한 이유: 값이 다른 커스텀 프로퍼티(var(--*))를
+   참조하므로, 빌드 시점에 값을 고정하지 않고 유틸리티가 항상 RAW 토큰을
+   그대로 가리키게 해야 `[data-theme]` 하위 오버라이드가 전파된다.
+   ============================================================ */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--card);
+  --color-ink: var(--ivory);
+  --color-ink-muted: var(--muted);
+  --color-primary: var(--champagne);
+  --color-primary-ink: var(--btn-ink);
+  --color-state-empty: var(--champagne);
+  --color-state-active: var(--ivory);
+  --color-state-review: var(--faint);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+
+  --spacing-touch: var(--space-44);
+  --text-desk: var(--fs-body);
+  --text-desk-lg: var(--fs-subhead);
+  --radius-card: var(--radius-sharp);
+
+  --font-serif: var(--serif);
+  --font-sans: var(--kr);
+}
+
+/* ============================================================
+   콘솔 스코프 오버라이드 — 업무 화면 한정, 게스트 표면 무접촉.
+   ============================================================ */
+/* iOS Safari는 포커스된 입력의 실효 폰트가 16px 미만이면 화면을 자동 확대한다. 콘솔 입력은
+   --fs-body(15px)를 그대로 상속해 그 임계값 아래에 있다. 16px는 iOS 줌을 막는 플랫폼 임계
+   상수일 뿐 디자인 시그니처 값이 아니므로, 전역 --fs-body는 그대로 두고(게스트 다크 표면의
+   무드 샘플 byte 동일 계약을 지킨다) [data-console-scope] 하위 입력에만 실효 폰트를 올린다. */
+[data-console-scope] :is(input, textarea, select) {
+  font-size: 16px;
+}
