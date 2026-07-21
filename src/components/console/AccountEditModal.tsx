@@ -5,6 +5,7 @@ import { useEvents } from '@/hooks/useEvents';
 import { useUpdateAccount } from '@/hooks/useUpdateAccount';
 import { ACCOUNT_ROLE_OPTIONS, accountRoleLabel, isEventIdsRequired } from '@/lib/account-constants';
 import type { AccountResponse, AccountRole } from '@/types/account';
+import { ConsoleModal } from './modal/ConsoleModal';
 
 interface AccountEditFormValues {
   name: string;
@@ -37,13 +38,17 @@ export function toEditFormValues(account?: AccountResponse): AccountEditFormValu
  * 이 모달은 목록에 항상 마운트된 채(`open`으로 표시만 토글) 유지된다 — `values` 옵션이 매 렌더
  * `account`가 바뀔 때마다 폼을 동기화하므로(GuestEditModal과 동일 이유) 편집 대상이 바뀌어도
  * 빈 폼으로 열리는 버그가 없다.
+ *
+ * dirty 판정은 `formState.isDirty`를 그대로 넘긴다 — GuestEditModal과 동일 이유(ADR-028).
+ * `account`가 없으면(호출부 불변식상 `open=true`와 항상 함께 전달되지만, 방어적으로) 폼 자체를
+ * 렌더하지 않는다 — `account.email` 등을 아예 참조하지 않도록 `ConsoleModal` 호출 전에 가른다.
  */
 export function AccountEditModal({ open, account, onClose }: AccountEditModalProps) {
   const {
     register,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<AccountEditFormValues>({
     defaultValues: toEditFormValues(account),
     values: toEditFormValues(account),
@@ -53,7 +58,7 @@ export function AccountEditModal({ open, account, onClose }: AccountEditModalPro
   const role = watch('role');
   const eventIdsRequired = isEventIdsRequired(role);
 
-  if (!open || !account) return null;
+  if (!account) return null;
 
   const onSubmit = async (values: AccountEditFormValues) => {
     await updateMutation.mutateAsync({
@@ -69,12 +74,8 @@ export function AccountEditModal({ open, account, onClose }: AccountEditModalPro
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex w-full max-w-md flex-col gap-4 rounded-card border border-line-soft bg-surface p-6 shadow-lg"
-      >
-        <h2 className="text-desk-lg font-semibold text-ink">계정 수정</h2>
+    <ConsoleModal open={open} onClose={onClose} title="계정 수정" dirty={isDirty} size="md">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <p className="text-sm text-ink-muted">{account.email}</p>
 
         <label className="flex flex-col gap-1">
@@ -141,6 +142,6 @@ export function AccountEditModal({ open, account, onClose }: AccountEditModalPro
         </div>
         {updateMutation.isError && <p className="text-sm text-danger">저장 중 오류가 발생했습니다.</p>}
       </form>
-    </div>
+    </ConsoleModal>
   );
 }

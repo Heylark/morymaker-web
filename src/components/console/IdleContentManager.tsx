@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/shared/Button';
 import { ConfirmDialog } from './ConfirmDialog';
+import { ConsoleModal } from './modal/ConsoleModal';
 import { useIdleContents } from '@/hooks/useIdleContents';
 import { useCreateIdleContent } from '@/hooks/useCreateIdleContent';
 import { useUpdateIdleContent } from '@/hooks/useUpdateIdleContent';
@@ -92,20 +93,23 @@ interface IdleContentFormProps {
 }
 
 /**
- * 등록/수정 모달 — SeatGroupForm 셸을 그대로 미러링한다(fixed inset-0 ... bg-black/40 +
- * rounded-card border-line-soft bg-surface, `if(!open) return null`). `values` 옵션으로
- * 편집 대상(content)이 바뀔 때마다 폼을 재동기화한다(모달 재오픈 stale 방지, SeatGroupForm과
- * 동일 근거). 등록은 name을 편집 input으로 받고 파일 선택이 필수이며, kind는 파일 MIME에서
- * 자동 파생돼 읽기 전용 배지로 노출된다(수동 선택 불가 — 서버 kind↔magic byte 불일치를
- * 구조적으로 예방). 수정은 name·종류를 읽기 전용으로 보여준다 — 서버가 등록 후 두 값 변경을
- * 받지 않기 때문이다.
+ * 등록/수정 모달 — SeatGroupForm 셸을 그대로 미러링한다(`ConsoleModal`이 카드·스크림·닫기
+ * 3경로를 소유). `values` 옵션으로 편집 대상(content)이 바뀔 때마다 폼을 재동기화한다(모달
+ * 재오픈 stale 방지, SeatGroupForm과 동일 근거). 등록은 name을 편집 input으로 받고 파일 선택이
+ * 필수이며, kind는 파일 MIME에서 자동 파생돼 읽기 전용 배지로 노출된다(수동 선택 불가 — 서버
+ * kind↔magic byte 불일치를 구조적으로 예방). 수정은 name·종류를 읽기 전용으로 보여준다 —
+ * 서버가 등록 후 두 값 변경을 받지 않기 때문이다.
+ *
+ * dirty 판정은 `formState.isDirty`에 "파일이 선택됐는가"를 OR한다 — 이 컴포넌트만 RHF 밖에
+ * 로컬 `file` state를 별도로 갖고 있어(등록 시 필수 파일 선택) `isDirty` 단독으로는 파일만
+ * 고른 채 스크림을 클릭하는 경로를 놓친다(ADR-028).
  */
 function IdleContentForm({ eid, open, content, onClose }: IdleContentFormProps) {
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<IdleContentFormValues>({
     defaultValues: toFormValues(content),
     values: toFormValues(content),
@@ -130,8 +134,6 @@ function IdleContentForm({ eid, open, content, onClose }: IdleContentFormProps) 
       if (previewUrl) URL.revokeObjectURL(previewUrl);
     };
   }, [previewUrl]);
-
-  if (!open) return null;
 
   const resetFileState = () => {
     setFile(null);
@@ -170,8 +172,8 @@ function IdleContentForm({ eid, open, content, onClose }: IdleContentFormProps) 
   };
 
   // 취소 시에도 파일 state를 비워둔다 — 이 컴포넌트는 폼이 닫혀도 언마운트되지 않으므로
-  // (`if (!open) return null`이 훅 호출 이후에 있어 인스턴스가 유지된다) 취소 없이 재오픈하면
-  // 이전에 선택했던 파일이 그대로 남는다.
+  // (open 게이트는 `ConsoleModal` 내부에 있고 이 컴포넌트 자신은 항상 렌더된다) 취소 없이
+  // 재오픈하면 이전에 선택했던 파일이 그대로 남는다.
   const handleClose = () => {
     resetFileState();
     onClose();
@@ -194,15 +196,14 @@ function IdleContentForm({ eid, open, content, onClose }: IdleContentFormProps) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex w-full max-w-md flex-col gap-4 rounded-card border border-line-soft bg-surface p-6 shadow-lg"
-      >
-        <h2 className="text-desk-lg font-semibold text-ink">
-          {content ? '대기화면 콘텐츠 수정' : '대기화면 콘텐츠 등록'}
-        </h2>
-
+    <ConsoleModal
+      open={open}
+      onClose={handleClose}
+      title={content ? '대기화면 콘텐츠 수정' : '대기화면 콘텐츠 등록'}
+      dirty={isDirty || file !== null}
+      size="md"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         {content ? (
           <div className="flex flex-col gap-1">
             <span className="text-sm text-ink-muted">이름</span>
@@ -304,7 +305,7 @@ function IdleContentForm({ eid, open, content, onClose }: IdleContentFormProps) 
           <p className="text-sm text-danger">저장 중 오류가 발생했습니다.</p>
         )}
       </form>
-    </div>
+    </ConsoleModal>
   );
 }
 
