@@ -49,8 +49,9 @@ test.describe('콘솔 셸 — 행사 현황(대시보드) 모바일(375px) 반�
     await expect(bottomNav).toBeVisible();
     await expect(bottomNav.getByRole('link', { name: '통계' })).toHaveAttribute('aria-current', 'page');
 
-    // 사이드바는 md 미만에서 숨김
-    await expect(page.getByRole('link', { name: '← 행사 목록' })).toBeHidden();
+    // 사이드바는 md 미만에서 숨김(hidden md:flex). toBeHidden()은 미매칭 locator에도 PASS하는
+    // vacuous 위험이 있어 요소 존재를 전제로 하는 complementary 셀렉터로 단언한다.
+    await expect(page.getByRole('complementary', { name: '콘솔 사이드바' })).toBeHidden();
 
     for (const title of ['등록 현황', '참석 현황', '주차 현황', '도착 현황', '누적 참석 추이']) {
       await expect(page.getByRole('heading', { name: title })).toBeVisible();

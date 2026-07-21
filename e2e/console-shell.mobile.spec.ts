@@ -58,8 +58,12 @@ test.describe('콘솔 셸 — 모바일(375px) 반응형 회귀', () => {
     await expect(bottomNav).toBeVisible();
     await expect(bottomNav.getByRole('link', { name: '명단' })).toHaveAttribute('aria-current', 'page');
 
-    // 사이드바는 md 미만에서 렌더 자체를 숨긴다(hidden md:flex) — 안의 링크도 함께 숨겨진다.
-    await expect(page.getByRole('link', { name: '← 행사 목록' })).toBeHidden();
+    // 사이드바는 md 미만에서 렌더 자체를 숨긴다(hidden md:flex). aria-label 자체가 사라지는
+    // toBeHidden()은 locator가 미매칭이어도 PASS(vacuous)하므로, 요소 존재를 전제로 하는
+    // `complementary`(<aside aria-label="콘솔 사이드바">)로 단언한다 — 구 셀렉터(행사 목록으로
+    // 되돌아가는 사이드바 링크)는 새 구조에 존재하지 않는다(Zone2 라벨은 '행사 목록', 헤더
+    // 뒤로 버튼은 aria-label="이전으로").
+    await expect(page.getByRole('complementary', { name: '콘솔 사이드바' })).toBeHidden();
 
     // 8열 표는 375px에서 가로 스와이프를 강제해 카드 리스트(hidden md:block ↔ md:hidden)로 대체됐다.
     // 같은 화면에 무관한 발송 이력 표(SmsLogView)가 별도로 존재해 'table' 태그만으로는 특정이
@@ -92,7 +96,7 @@ test.describe('콘솔 셸 — 모바일(375px) 반응형 회귀', () => {
     await page.goto(`/events/${EID}/roster`);
 
     await page.setViewportSize({ width: 1280, height: 800 });
-    await expect(page.getByRole('link', { name: '← 행사 목록' })).toBeVisible();
+    await expect(page.getByRole('complementary', { name: '콘솔 사이드바' })).toBeVisible();
     await expect(page.getByRole('navigation', { name: '주요 메뉴' })).toBeHidden();
 
     // md 이상에서는 카드 리스트 대신 기존 8열 표로 회귀돼야 한다.

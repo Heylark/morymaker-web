@@ -25,9 +25,7 @@ export default function ScanHomePage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col gap-6 bg-surface-sunken p-6">
-      <h1 className="text-desk-lg font-semibold text-ink">체크인 스캔</h1>
-
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       {!fallback && (
         <QrScanner facingMode="user" onDecode={handleDecode} onPermissionDenied={() => setFallback(true)} />
       )}
@@ -58,6 +56,6 @@ export default function ScanHomePage() {
           )}
         </div>
       )}
-    </main>
+    </div>
   );
 }

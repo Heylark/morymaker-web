@@ -48,8 +48,9 @@ test.describe('콘솔 셸 — 브랜딩 화면 모바일(375px) 반응형', () =
     await expect(bottomNav).toBeVisible();
     await expect(bottomNav.getByRole('link', { name: '브랜딩' })).toHaveAttribute('aria-current', 'page');
 
-    // 사이드바는 md 미만에서 숨김(hidden md:flex)
-    await expect(page.getByRole('link', { name: '← 행사 목록' })).toBeHidden();
+    // 사이드바는 md 미만에서 숨김(hidden md:flex). toBeHidden()은 미매칭 locator에도 PASS하는
+    // vacuous 위험이 있어 요소 존재를 전제로 하는 complementary 셀렉터로 단언한다.
+    await expect(page.getByRole('complementary', { name: '콘솔 사이드바' })).toBeHidden();
 
     // 브랜딩 폼·프리뷰·대기화면이 좁은 폭에서 렌더되는지(heading 도달성)
     await expect(page.getByRole('heading', { name: '행사 브랜딩 컬러' })).toBeVisible();

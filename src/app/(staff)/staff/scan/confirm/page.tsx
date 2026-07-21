@@ -36,13 +36,11 @@ function ScanConfirmContent() {
   }
 
   if (!token && !guestId) {
-    return <main className="p-6 text-ink-muted">잘못된 접근입니다 — 스캔 또는 검색을 다시 진행하세요.</main>;
+    return <div className="text-ink-muted">잘못된 접근입니다 — 스캔 또는 검색을 다시 진행하세요.</div>;
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-6 bg-surface-sunken p-6">
-      <h1 className="text-desk-lg font-semibold text-ink">본인 확인</h1>
-
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
       {checkinMutation.isSuccess ? (
         <AttendConfirmCard result={checkinMutation.data} />
       ) : (
@@ -60,7 +58,7 @@ function ScanConfirmContent() {
           {checkinMutation.isError && <p className="text-danger">체크인 처리 중 오류가 발생했습니다.</p>}
         </>
       )}
-    </main>
+    </div>
   );
 }
 
@@ -68,7 +66,7 @@ function ScanConfirmContent() {
 // (App Router 규칙) — 쿼리 파싱이 필요한 부분만 하위 컴포넌트로 분리해 감싼다.
 export default function ScanConfirmPage() {
   return (
-    <Suspense fallback={<main className="p-6 text-ink-muted">불러오는 중...</main>}>
+    <Suspense fallback={<div className="text-ink-muted">불러오는 중...</div>}>
       <ScanConfirmContent />
     </Suspense>
   );

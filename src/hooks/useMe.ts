@@ -4,7 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { BASE_PATH } from '@/lib/base-path';
 
 interface MeResponse {
-  user: { username: string; roles: string[]; eventIds: string[] } | null;
+  // eventIds는 3-값 의미론이다 — null=클레임 부재(SYSTEM_ADMIN 전체 허용) / []=배정 0건 /
+  // string[]=배정 목록(`api/auth/me/route.ts`의 `extractEventIds`가 그대로 실어 보낸다).
+  // `string[]`로 좁게 선언하면 SYSTEM_ADMIN 세션에서 `eventIds.length`가 null.length로
+  // 런타임 TypeError를 낸다(StaffEventProvider.tsx는 이미 `string[] | null`로 올바르게 선언돼 있다).
+  user: { username: string; roles: string[]; eventIds: string[] | null } | null;
 }
 
 /**
