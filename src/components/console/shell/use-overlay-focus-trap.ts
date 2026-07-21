@@ -2,7 +2,12 @@
 
 import { useEffect, useRef } from 'react';
 
-const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+// 폼 컨트롤(input·select·textarea)을 포함하지 않으면 순환 경계(first/last)가 버튼만으로
+// 계산돼, 모달 안 입력 필드들이 Tab 순환에서 완전히 배제된다(키보드 사용자가 재진입 불가 —
+// WCAG 2.1.1/2.4.3). offsetParent===null(비표시 요소·display:none 조상)은 순환 계산에서
+// 제외해 숨겨진 필드가 first/last로 계산되는 사고를 막는다.
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
 
 /**
  * 오버레이 카드(모달·시트) 공용 포커스 트랩 — `AccountSheet`(U1)·`ConsoleModal`(U3) 양쪽이
@@ -28,7 +33,9 @@ export function useOverlayFocusTrap(active: boolean) {
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== 'Tab' || !dialogRef.current) return;
-      const focusables = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+      const focusables = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((el) => el.offsetParent !== null);
       if (focusables.length === 0) return;
       const first = focusables[0];
       const last = focusables[focusables.length - 1];

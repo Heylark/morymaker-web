@@ -27,10 +27,17 @@ export function EventList({ events }: EventListProps) {
             <span className="text-sm text-ink-muted">{event.status}</span>
           </div>
           <div className="flex gap-4">
-            <Link href={`/events/${event.id}/parking`} className="text-sm font-medium text-primary">
+            {/* prefetch 비활성 — 이 목록은 middleware 보호 접두사(/events) 안이라, 로그아웃 시점
+                직전에 아직 끝나지 않은 백그라운드 프리페치가 쿠키 삭제 이후 middleware→
+                /oauth/login을 다시 태워 PKCE 검증자를 재발급시킬 수 있다(부록 A-2 규칙). */}
+            <Link href={`/events/${event.id}/parking`} prefetch={false} className="text-sm font-medium text-primary">
               관리
             </Link>
-            <Link href={`/events/${event.id}/edit`} className="text-sm font-medium text-ink-muted hover:text-ink">
+            <Link
+              href={`/events/${event.id}/edit`}
+              prefetch={false}
+              className="text-sm font-medium text-ink-muted hover:text-ink"
+            >
               수정
             </Link>
           </div>

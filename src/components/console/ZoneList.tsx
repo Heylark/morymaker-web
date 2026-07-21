@@ -20,8 +20,11 @@ export function ZoneList({ eid }: ZoneListProps) {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-desk-lg font-semibold text-ink">주차 구획</h1>
+        {/* prefetch 비활성 — 로그아웃 시점 백그라운드 프리페치가 쿠키 삭제 후 middleware→
+            /oauth/login을 재개시하지 못하게 한다(부록 A-2 규칙). */}
         <Link
           href={`/events/${eid}/parking/new`}
+          prefetch={false}
           className="min-h-touch rounded-card bg-primary px-4 py-2 text-sm font-semibold text-primary-ink"
         >
           새 구획 추가
@@ -38,6 +41,7 @@ export function ZoneList({ eid }: ZoneListProps) {
             <li key={zone.id}>
               <Link
                 href={`/events/${eid}/parking/${zone.id}`}
+                prefetch={false}
                 className="flex items-center justify-between gap-3 rounded-card border border-line-soft bg-surface p-4"
               >
                 <div className="flex flex-col gap-1">

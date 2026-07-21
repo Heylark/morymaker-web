@@ -30,6 +30,7 @@ export function RosterTabs({ eid }: RosterTabsProps) {
           <Link
             key={tab.key}
             href={href}
+            prefetch={false}
             className={`min-h-touch flex items-center border-b-2 px-4 text-sm font-semibold ${
               active ? 'border-primary text-ink' : 'border-transparent text-ink-muted hover:text-ink'
             }`}

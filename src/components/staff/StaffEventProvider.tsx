@@ -68,7 +68,7 @@ export function StaffEventProvider({ children }: { children: React.ReactNode }) 
         {/* 이 화면은 셸(사이드바·헤더·탭바) 밖이라 복귀 동선이 0개다 — /api/auth/me 응답이
             지연·중단되면 이 분기에 고정될 수 있어 empty·unsupported와 동일하게 안전망을
             둔다(ADR-029, 3분기 대칭). */}
-        <Link href="/landing" className="text-desk text-[var(--champagne)] underline underline-offset-4">
+        <Link href="/landing" prefetch={false} className="text-desk text-[var(--champagne)] underline underline-offset-4">
           콘솔로 돌아가기
         </Link>
       </main>
@@ -82,7 +82,7 @@ export function StaffEventProvider({ children }: { children: React.ReactNode }) 
         {/* 이 화면은 셸(사이드바·헤더·탭바) 밖이라 복귀 동선이 0개다 — 직접 URL·북마크 도달
             대비 안전망(ADR-029). Zone2·랜딩이 이미 이 링크를 조건부로 감추므로 정상 경로로는
             도달하지 않는다. */}
-        <Link href="/landing" className="text-desk text-[var(--champagne)] underline underline-offset-4">
+        <Link href="/landing" prefetch={false} className="text-desk text-[var(--champagne)] underline underline-offset-4">
           콘솔로 돌아가기
         </Link>
       </main>
@@ -96,7 +96,7 @@ export function StaffEventProvider({ children }: { children: React.ReactNode }) 
           여러 행사에 배정되어 있거나 시스템 관리자 계정입니다. 이 화면은 아직 지원하지 않습니다 —
           관리자에게 문의하세요.
         </p>
-        <Link href="/landing" className="text-desk text-[var(--champagne)] underline underline-offset-4">
+        <Link href="/landing" prefetch={false} className="text-desk text-[var(--champagne)] underline underline-offset-4">
           콘솔로 돌아가기
         </Link>
       </main>
