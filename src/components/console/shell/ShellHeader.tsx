@@ -92,7 +92,11 @@ function MobileBar({
   const { data: me } = useMe();
 
   if (!meta) return null;
-  const backHref = meta.variant === 'detail' ? meta.backHref : null;
+  // variant 무관 backHref 그대로 사용 — 레지스트리(§3-2)가 목록형 3행(events/new·accounts/new·
+  // staff/scan/confirm)에도 backHref를 명시했고, 데스크톱 헤더는 목록형에서 그 값을 소비하지
+  // 않으므로(§3-7 md↑ 규정) 모바일 상단 바가 그 값의 유일한 소비자다. variant로 게이트하면
+  // 이 세 화면이 375px에서 목록으로 돌아갈 ← 를 완전히 잃는다.
+  const backHref = meta.backHref;
   const action = meta.variant === 'list' ? meta.action : null;
 
   return (
@@ -102,15 +106,19 @@ function MobileBar({
           ←
         </Link>
       )}
+      {/* 데스크톱 헤더(<h1>, md:flex)와 CSS 배타 렌더(hidden↔md:hidden)라 접근성 트리에는
+          한쪽만 남는다 — 모바일 전용 <h1>을 둬도 헤딩 중복은 생기지 않는다. 이전에는 각 페이지가
+          자체 <h1>을 갖고 있어 모바일에서도 헤딩이 존재했는데, 그 <h1>을 제거하고 헤더로
+          승격하면서 이 자리가 <span>/<p>였던 탓에 375px에서 헤딩이 0개가 되는 회귀가 있었다. */}
       <div className="min-w-0 flex-1 truncate">
         {meta.variant === 'list' ? (
-          <span className="truncate text-sm font-semibold text-ink">{meta.title}</span>
+          <h1 className="truncate text-sm font-semibold text-ink">{meta.title}</h1>
         ) : (
           <>
             <p className="eyebrow truncate">{meta.eyebrow}</p>
             {eid && (
               <EventHeaderData eid={eid}>
-                {(event) => <p className="truncate text-sm font-semibold text-ink">{event?.name ?? ''}</p>}
+                {(event) => <h1 className="truncate text-sm font-semibold text-ink">{event?.name ?? ''}</h1>}
               </EventHeaderData>
             )}
           </>
