@@ -2,6 +2,7 @@
 
 import { useEffect, useId } from 'react';
 import { useShellOverlay } from '../shell/shell-context';
+import { useOverlayFocusTrap } from '../shell/use-overlay-focus-trap';
 
 interface ConsoleModalProps {
   open: boolean;
@@ -29,10 +30,14 @@ const SIZE_CLASS: Record<'md' | 'lg', string> = {
  * 오버레이 기하는 `useShellOverlay()`가 계산한 문자열을 그대로 소비한다(ADR-016) — 사이드바
  * 폭·탭바 유무를 이 컴포넌트가 직접 알 필요가 없다. 셸 밖에서 쓰이면(컨텍스트 null) 전체 화면
  * `fixed inset-0`으로 안전 퇴화한다.
+ *
+ * 포커스 이동·Tab 트랩·복귀는 `useOverlayFocusTrap`(AccountSheet와 공유)이 소유한다 —
+ * registerOverlay()의 inert는 사이드바·탭바에만 걸려 물리적 Tab 순서를 막지 못하기 때문.
  */
 export function ConsoleModal({ open, onClose, title, dirty = false, size = 'md', children }: ConsoleModalProps) {
   const overlay = useShellOverlay();
   const titleId = useId();
+  const dialogRef = useOverlayFocusTrap(open);
 
   useEffect(() => {
     if (!open) return;
@@ -67,12 +72,14 @@ export function ConsoleModal({ open, onClose, title, dirty = false, size = 'md',
     <div className={frameClassName} role="presentation">
       <div data-theme="dark" onClick={handleScrimClick} aria-hidden className="absolute inset-0 bg-[var(--void)] opacity-60" />
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        tabIndex={-1}
         data-theme="light"
         data-console-scope
-        className={`absolute inset-x-0 bottom-0 flex w-full max-h-[85vh] flex-col gap-4 overflow-y-auto rounded-t-[var(--radius-frame)] border border-line-soft bg-surface p-6 [box-shadow:var(--shadow-kiosk)] md:static md:mx-auto md:my-auto md:max-h-none md:rounded-[var(--radius-frame)] ${SIZE_CLASS[size]}`}
+        className={`absolute inset-x-0 bottom-0 flex w-full max-h-[85vh] flex-col gap-4 overflow-y-auto rounded-t-[var(--radius-frame)] border border-line-soft bg-surface p-6 [box-shadow:var(--shadow-kiosk)] md:relative md:mx-auto md:my-auto md:max-h-none md:rounded-[var(--radius-frame)] ${SIZE_CLASS[size]}`}
       >
         <div className="mx-auto h-1 w-10 shrink-0 rounded-full bg-[var(--line-soft)] md:hidden" />
         <h2 id={titleId} className="text-desk-lg font-semibold text-ink">
