@@ -17,7 +17,7 @@
  *      재조립하는 값)까지 URL 파서 기준으로 최종 판정한다
  */
 
-export const DEFAULT_RETURN_TO = '/console';
+export const DEFAULT_RETURN_TO = '/landing';
 
 const RETURN_TO_GUARD_ORIGIN = 'https://mm-returnto-guard.invalid';
 

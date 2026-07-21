@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { createContext, useEffect, useState } from 'react';
 import { BASE_PATH } from '@/lib/base-path';
 
@@ -70,19 +71,28 @@ export function StaffEventProvider({ children }: { children: React.ReactNode }) 
 
   if (state.status === 'empty') {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-surface-sunken p-6 text-center">
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-surface-sunken p-6 text-center">
         <p className="text-desk text-ink-muted">배정된 행사가 없습니다. 관리자에게 문의하세요.</p>
+        {/* 이 화면은 셸(사이드바·헤더·탭바) 밖이라 복귀 동선이 0개다 — 직접 URL·북마크 도달
+            대비 안전망(ADR-029). Zone2·랜딩이 이미 이 링크를 조건부로 감추므로 정상 경로로는
+            도달하지 않는다. */}
+        <Link href="/landing" className="text-desk text-[var(--champagne)] underline underline-offset-4">
+          콘솔로 돌아가기
+        </Link>
       </main>
     );
   }
 
   if (state.status === 'unsupported') {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-surface-sunken p-6 text-center">
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-surface-sunken p-6 text-center">
         <p className="text-desk text-ink-muted">
           여러 행사에 배정되어 있거나 시스템 관리자 계정입니다. 이 화면은 아직 지원하지 않습니다 —
           관리자에게 문의하세요.
         </p>
+        <Link href="/landing" className="text-desk text-[var(--champagne)] underline underline-offset-4">
+          콘솔로 돌아가기
+        </Link>
       </main>
     );
   }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { FORBIDDEN_PATH, resolveGateOutcome } from '@/lib/roles';
 import { BASE_PATH } from '@/lib/base-path';
 
@@ -27,6 +27,7 @@ export function useRequireRole(roles: readonly string[]): UseRequireRoleResult {
   const [hasRole, setHasRole] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -36,7 +37,12 @@ export function useRequireRole(roles: readonly string[]): UseRequireRoleResult {
       .then((d: { user: { username: string; roles: string[] } | null }) => {
         const outcome = resolveGateOutcome(d.user?.roles ?? null, roles);
         if (outcome === 'UNAUTHENTICATED') {
-          router.replace('/oauth/login');
+          // returnTo는 usePathname()만 쓰고 쿼리스트링은 붙이지 않는다(ADR-013) — 이 훅은
+          // (console)·(staff)·(landing) 그룹 전체를 감싸는 gate-client에서 호출되므로,
+          // useSearchParams()까지 병용하면 하위 전 라우트가 CSR bailout 대상이 되어 정적
+          // 프리렌더 빌드가 실패할 수 있다(SPA 조작 중 만료된 경우에 한해 쿼리가 유실된다 —
+          // 최초 딥링크 진입은 middleware가 pathname+search를 온전히 보존한다).
+          router.replace(`/oauth/login?returnTo=${encodeURIComponent(pathname)}`);
           return;
         }
         if (outcome === 'FORBIDDEN') {
@@ -47,12 +53,13 @@ export function useRequireRole(roles: readonly string[]): UseRequireRoleResult {
       })
       .catch((err) => {
         if (err.name === 'AbortError') return; // 언마운트로 인한 중단은 무시
-        router.replace('/oauth/login');
+        router.replace(`/oauth/login?returnTo=${encodeURIComponent(pathname)}`);
       })
       .finally(() => setLoading(false));
     return () => controller.abort();
     // roles는 호출부가 모듈 top-level 상수(예: STAFF_ROLES)로 넘기는 안정 참조를 전제한다 —
-    // 매 렌더 새 배열 리터럴을 넘기면 안 된다(재실행 방지를 위해 의도적으로 deps에서 제외).
+    // 매 렌더 새 배열 리터럴을 넘기면 안 된다. pathname은 마운트 시점 값으로 충분하다(재실행
+    // 방지를 위해 의도적으로 둘 다 deps에서 제외).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
