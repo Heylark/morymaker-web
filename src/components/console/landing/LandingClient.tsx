@@ -45,7 +45,7 @@ export function LandingClient() {
     <div className="flex min-h-dvh flex-col">
       <header className="flex items-center justify-between border-b border-line-soft px-[var(--space-20)] py-[var(--space-12)]">
         <Link href="/landing" className="flex items-center gap-2">
-          <span className="font-[var(--serif)] text-lg text-[var(--champagne)]">M</span>
+          <span className="font-serif text-lg text-[var(--champagne)]">M</span>
           <span className="text-sm font-semibold tracking-wide text-ink">MORYMAKER</span>
         </Link>
         <SessionZone variant="bar" />
@@ -53,7 +53,7 @@ export function LandingClient() {
 
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-[var(--space-5)] px-[var(--space-44)] py-[var(--space-30)]">
         <p className="eyebrow">Signed in</p>
-        <h1 className="text-[length:var(--fs-subhead)] font-extrabold tracking-[var(--ls-tight)] text-ink">
+        <h1 className="text-[length:var(--fs-display)] font-extrabold tracking-[var(--ls-tight)] text-ink">
           안녕하세요, {displayNameOf(username)}님
         </h1>
         <p className="text-[length:var(--fs-hint)] text-ink-muted">이동할 곳을 선택하세요.</p>
@@ -75,18 +75,16 @@ export function LandingClient() {
                   }`}
                 >
                   <span className="eyebrow">{CARD_EYEBROW[item.key]}</span>
-                  <span className="text-[length:var(--fs-body-sm)] font-bold text-ink">{item.label}</span>
+                  <span className="text-desk font-bold text-ink">{item.label}</span>
                   {item.key === 'events' && showEventCount ? (
                     <span className="mt-[var(--space-5)] flex items-baseline gap-[var(--space-5)]">
-                      <span className="font-[var(--serif)] text-[length:var(--fs-num-md)] leading-none text-[var(--champagne)]">
+                      <span className="font-serif text-[length:var(--fs-num-md)] leading-none text-[var(--champagne)]">
                         {activeEventCount}
                       </span>
-                      <span className="text-[length:var(--fs-label)] text-ink-muted">건 운영·준비 중</span>
+                      <span className="text-desk text-ink-muted">건 운영·준비 중</span>
                     </span>
                   ) : (
-                    <span className="text-[length:var(--fs-label)] leading-relaxed text-ink-muted">
-                      {item.description}
-                    </span>
+                    <span className="text-desk leading-relaxed text-ink-muted">{item.description}</span>
                   )}
                 </Link>
               );

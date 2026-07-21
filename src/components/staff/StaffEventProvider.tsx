@@ -63,8 +63,14 @@ export function StaffEventProvider({ children }: { children: React.ReactNode }) 
 
   if (state.status === 'loading') {
     return (
-      <main className="flex min-h-dvh items-center justify-center bg-surface-sunken p-6">
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-surface-sunken p-6 text-center">
         <p className="text-desk text-ink-muted">확인 중...</p>
+        {/* 이 화면은 셸(사이드바·헤더·탭바) 밖이라 복귀 동선이 0개다 — /api/auth/me 응답이
+            지연·중단되면 이 분기에 고정될 수 있어 empty·unsupported와 동일하게 안전망을
+            둔다(ADR-029, 3분기 대칭). */}
+        <Link href="/landing" className="text-desk text-[var(--champagne)] underline underline-offset-4">
+          콘솔로 돌아가기
+        </Link>
       </main>
     );
   }
