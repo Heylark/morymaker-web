@@ -44,6 +44,7 @@ function DesktopHeader({ meta, eid }: { meta: HeaderMeta | null; eid: string | u
         {meta.action && (
           <Link
             href={meta.action.href}
+            prefetch={false}
             className="ml-auto min-h-touch flex items-center rounded-card bg-primary px-4 text-sm font-semibold text-primary-ink"
           >
             {meta.action.label}
@@ -55,7 +56,7 @@ function DesktopHeader({ meta, eid }: { meta: HeaderMeta | null; eid: string | u
 
   return (
     <header className="sticky top-0 z-30 hidden h-[var(--shell-header-h)] items-center gap-[var(--space-10)] border-b border-line-soft bg-surface px-6 md:flex">
-      <Link href={meta.backHref} aria-label="이전으로" className={BACK_BUTTON_CLASS}>
+      <Link href={meta.backHref} prefetch={false} aria-label="이전으로" className={BACK_BUTTON_CLASS}>
         ←
       </Link>
       <div>
@@ -102,7 +103,7 @@ function MobileBar({
   return (
     <div className="sticky top-0 z-30 flex h-[var(--shell-header-h)] items-center gap-3 border-b border-line-soft bg-surface px-4 md:hidden">
       {backHref && (
-        <Link href={backHref} aria-label="이전으로" className={BACK_BUTTON_CLASS}>
+        <Link href={backHref} prefetch={false} aria-label="이전으로" className={BACK_BUTTON_CLASS}>
           ←
         </Link>
       )}
@@ -127,6 +128,7 @@ function MobileBar({
       {action && (
         <Link
           href={action.href}
+          prefetch={false}
           className="min-h-touch shrink-0 inline-flex items-center rounded-[var(--radius-sharp)] bg-[var(--champagne)] px-[var(--space-11)] text-[length:var(--fs-cta)] font-bold text-[var(--btn-ink)]"
         >
           {action.label}

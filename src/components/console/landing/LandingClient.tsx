@@ -44,7 +44,7 @@ export function LandingClient() {
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="flex items-center justify-between border-b border-line-soft px-[var(--space-20)] py-[var(--space-12)]">
-        <Link href="/landing" className="flex items-center gap-2">
+        <Link href="/landing" prefetch={false} className="flex items-center gap-2">
           <span className="font-serif text-lg text-[var(--champagne)]">M</span>
           <span className="text-sm font-semibold tracking-wide text-ink">MORYMAKER</span>
         </Link>
@@ -53,7 +53,7 @@ export function LandingClient() {
 
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col justify-center gap-[var(--space-5)] px-[var(--space-44)] py-[var(--space-30)]">
         <p className="eyebrow">Signed in</p>
-        <h1 className="text-[length:var(--fs-display)] font-extrabold tracking-[var(--ls-tight)] text-ink">
+        <h1 className="break-words text-[length:var(--fs-display)] font-extrabold tracking-[var(--ls-tight)] text-ink">
           안녕하세요, {displayNameOf(username)}님
         </h1>
         <p className="text-[length:var(--fs-hint)] text-ink-muted">이동할 곳을 선택하세요.</p>
@@ -70,6 +70,7 @@ export function LandingClient() {
                 <Link
                   key={item.key}
                   href={item.href}
+                  prefetch={false}
                   className={`flex flex-col gap-[var(--space-3)] rounded-card bg-surface-sunken p-[var(--space-14)] transition-colors hover:border-[var(--champagne)] ${
                     isPrimary ? 'border border-line [box-shadow:var(--glow-cta)]' : 'border border-line-soft'
                   }`}

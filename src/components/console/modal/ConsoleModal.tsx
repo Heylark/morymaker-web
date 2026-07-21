@@ -79,7 +79,7 @@ export function ConsoleModal({ open, onClose, title, dirty = false, size = 'md',
         tabIndex={-1}
         data-theme="light"
         data-console-scope
-        className={`absolute inset-x-0 bottom-0 flex w-full max-h-[85vh] flex-col gap-4 overflow-y-auto rounded-t-[var(--radius-frame)] border border-line-soft bg-surface p-6 [box-shadow:var(--shadow-kiosk)] md:relative md:mx-auto md:my-auto md:max-h-none md:rounded-[var(--radius-frame)] ${SIZE_CLASS[size]}`}
+        className={`absolute inset-x-0 bottom-0 flex w-full max-h-[85vh] flex-col gap-4 overflow-y-auto rounded-t-[var(--radius-frame)] border border-line-soft bg-surface p-6 [box-shadow:var(--shadow-kiosk)] md:relative md:mx-auto md:my-auto md:rounded-[var(--radius-frame)] ${SIZE_CLASS[size]}`}
       >
         <div className="mx-auto h-1 w-10 shrink-0 rounded-full bg-[var(--line-soft)] md:hidden" />
         <h2 id={titleId} className="text-desk-lg font-semibold text-ink">

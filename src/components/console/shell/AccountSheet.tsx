@@ -76,6 +76,7 @@ export function AccountSheet({ onClose }: AccountSheetProps) {
             <Link
               key={item.key}
               href={item.href}
+              prefetch={false}
               onClick={onClose}
               className="min-h-touch flex items-center rounded-[var(--radius-sharp)] px-3 text-sm text-ink"
             >

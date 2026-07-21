@@ -30,6 +30,7 @@ export function EventTabBar({ eid, inert }: EventTabBarProps) {
           <Link
             key={item.key}
             href={href}
+            prefetch={false}
             aria-current={active ? 'page' : undefined}
             className={`flex min-h-touch flex-1 items-center justify-center text-sm ${
               active ? 'font-semibold text-primary' : 'text-ink-muted'

@@ -35,6 +35,7 @@ function EventContextZone({ eid, pathname }: { eid: string; pathname: string | n
             <Link
               key={item.key}
               href={href}
+              prefetch={false}
               aria-current={active ? 'page' : undefined}
               className={`min-h-touch flex items-center rounded-[var(--radius-sharp)] px-4 text-sm ${active ? ACTIVE_CLASS : INACTIVE_CLASS}`}
             >
@@ -66,7 +67,7 @@ export function ShellSidebar({ eid, inert }: ShellSidebarProps) {
     >
       <div className="flex h-[var(--shell-header-h)] shrink-0 items-center gap-2 border-b border-line-soft px-4">
         {isAdmin ? (
-          <Link href="/events" className="flex items-center gap-2">
+          <Link href="/events" prefetch={false} className="flex items-center gap-2">
             <span className="font-[var(--serif)] text-lg text-[var(--champagne)]">M</span>
             <span className="text-sm font-semibold tracking-wide text-ink">MORYMAKER</span>
           </Link>
@@ -89,6 +90,7 @@ export function ShellSidebar({ eid, inert }: ShellSidebarProps) {
               <Link
                 key={item.key}
                 href={item.href}
+                prefetch={false}
                 aria-current={active ? 'page' : undefined}
                 className={`min-h-touch flex items-center rounded-[var(--radius-sharp)] px-3 text-sm ${active ? ACTIVE_CLASS : INACTIVE_CLASS}`}
               >
