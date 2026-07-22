@@ -5,12 +5,13 @@ import {
   COOKIE_ACCESS_TOKEN,
   COOKIE_AUTH,
   COOKIE_EXPIRE_OPTIONS,
+  COOKIE_ID_TOKEN,
   COOKIE_REFRESH_TOKEN,
   SESSION_COOKIE_OPTIONS,
 } from '@/lib/cookies';
 import { getAuthMode } from '@/lib/api-auth-mode';
 import { getJwtExp } from '@/lib/tokens';
-import { refreshTokens } from '@/lib/auth-refresh';
+import { refreshTokens, type TokenSet } from '@/lib/auth-refresh';
 
 /**
  * BFF 프록시 Route Handler — /api/proxy/[...path]
@@ -19,8 +20,9 @@ import { refreshTokens } from '@/lib/auth-refresh';
  * Authorization: Bearer 헤더를 부착한 뒤 api에 전달한다. 3분법(PRIVATE/HYBRID/PUBLIC) 판정에
  * 따라 토큰 처리 경로가 갈린다 — 상세는 lib/api-auth-mode.ts 참조.
  *
- * 회전 계약: auth가 reuseRefreshTokens=false라 refresh 성공 시 access·refresh 쿠키를 반드시
- * 함께 갱신한다(하나만 갱신하면 다음 refresh가 소비된 옛 토큰을 재제시해 family-kill로 이어진다).
+ * 회전 계약: auth가 reuseRefreshTokens=false라 refresh 성공 시 access·refresh·id 3종 쿠키를
+ * 반드시 함께 갱신한다(하나만 갱신하면 다음 refresh가 소비된 옛 토큰을 재제시해 family-kill로
+ * 이어지고, id_token을 갱신하지 못하면 다음 로그아웃이 옛 hint로 auth에게 거부된다).
  */
 
 export const dynamic = 'force-dynamic';
@@ -66,10 +68,16 @@ function buildResponseHeaders(upstream: Response): Headers {
   return headers;
 }
 
-/** PRIVATE 인증 만료/실패 시 공통 응답 — 인증 쿠키 3종 삭제 + 401(즉시 로그아웃 유도, fail-closed). */
+/**
+ * PRIVATE 인증 만료/실패 시 공통 응답 — 인증 쿠키 4종 삭제 + 401(즉시 로그아웃 유도, fail-closed).
+ * mm_id_token도 함께 지운다 — 남기면 로그아웃이 그 값을 hint로 재사용해 auth의 검증 순서(대체된
+ * 토큰은 조회되지 않음)에 걸려 400으로 거부된다. /api/auth/refresh는 이미 4종을 지우므로 그
+ * 계약에 맞춘다.
+ */
 function unauthorizedResponse(message: string): NextResponse {
   const res = NextResponse.json({ error: message }, { status: 401 });
   res.cookies.set(COOKIE_AUTH, '', COOKIE_EXPIRE_OPTIONS);
+  res.cookies.set(COOKIE_ID_TOKEN, '', COOKIE_EXPIRE_OPTIONS);
   res.cookies.set(COOKIE_ACCESS_TOKEN, '', COOKIE_EXPIRE_OPTIONS);
   res.cookies.set(COOKIE_REFRESH_TOKEN, '', COOKIE_EXPIRE_OPTIONS);
   return res;
@@ -137,9 +145,28 @@ async function proxyRequest(
     return unauthorizedResponse('인증이 필요합니다.');
   }
 
+  // 회전 결과 단일 슬롯 — proactive·reactive 어느 쪽이 회전시켰든 여기에만 담긴다. 응답 지점마다
+  // 값을 재조립하지 않고 이 슬롯 하나만 최종적으로 반영하므로, 회전 이후의 return 경로가 이 값을
+  // 싣지 못해 "서버는 회전했는데 브라우저는 옛 값"으로 남는 상태(blocker)가 구조적으로 없어진다.
+  let rotated: TokenSet | undefined;
+
+  /**
+   * 회전이 발생했다면 그 결과를 응답 쿠키에 반영한다. 회전 이후 이 핸들러를 빠져나가는 모든
+   * 경로가 이 함수를 통과해야 한다 — 서버측 토큰은 refreshTokens() 성공 시점에 이미 교체돼
+   * 있으므로, 응답에 싣지 못한 경로는 브라우저를 옛 토큰에 묶어둔 채로 끝난다.
+   * 회전이 없었으면 아무것도 하지 않는다(no-op).
+   */
+  function applyRotatedCookies(res: NextResponse): NextResponse {
+    if (!rotated) return res;
+    res.cookies.set(COOKIE_ACCESS_TOKEN, rotated.accessToken, SESSION_COOKIE_OPTIONS);
+    res.cookies.set(COOKIE_REFRESH_TOKEN, rotated.refreshToken, SESSION_COOKIE_OPTIONS);
+    // 서버가 새 ID 토큰을 만들지 않았다면 인가 레코드의 기존 ID 토큰도 대체되지 않아 옛 쿠키가
+    // 여전히 유효한 로그아웃 힌트다 — 이 경우 지우지 않고 그대로 둔다.
+    if (rotated.idToken) res.cookies.set(COOKIE_ID_TOKEN, rotated.idToken, SESSION_COOKIE_OPTIONS);
+    return res;
+  }
+
   let proactiveRefreshDone = false;
-  // proactive 회전 시 새 refresh_token도 함께 보관해뒀다가 응답 쿠키에 반영한다(회전 계약 — 아래 참고).
-  let rotatedRefreshToken: string | undefined;
   if (token && isTokenExpired(token)) {
     const refreshTokenValue = cookieStore.get(COOKIE_REFRESH_TOKEN)?.value;
     if (!refreshTokenValue) {
@@ -151,8 +178,8 @@ async function proxyRequest(
     } else {
       const tokenSet = await refreshTokens(refreshTokenValue);
       if (tokenSet) {
-        token = tokenSet.accessToken;
-        rotatedRefreshToken = tokenSet.refreshToken;
+        rotated = tokenSet;
+        token = rotated.accessToken;
         proactiveRefreshDone = true;
       } else if (mode === 'hybrid') {
         token = undefined;
@@ -175,7 +202,7 @@ async function proxyRequest(
       bodyBuffer = Buffer.from(await request.arrayBuffer());
     } catch (err) {
       console.error(`[Proxy] 요청 본문 읽기 실패: ${request.method} ${targetPath}`, err);
-      return NextResponse.json({ error: '요청 본문 읽기 실패' }, { status: 400 });
+      return applyRotatedCookies(NextResponse.json({ error: '요청 본문 읽기 실패' }, { status: 400 }));
     }
   }
 
@@ -191,7 +218,7 @@ async function proxyRequest(
     });
   } catch (err) {
     console.error(`[Proxy] 업스트림 요청 실패: ${request.method} ${targetPath}`, err);
-    return NextResponse.json({ error: '업스트림 서버 연결 실패' }, { status: 502 });
+    return applyRotatedCookies(NextResponse.json({ error: '업스트림 서버 연결 실패' }, { status: 502 }));
   }
 
   // reactive: 선제 refresh를 뚫고 401 — 이번 요청에서 아직 refresh를 안 했을 때만 1회 시도
@@ -200,7 +227,8 @@ async function proxyRequest(
     if (refreshTokenValue) {
       const tokenSet = await refreshTokens(refreshTokenValue);
       if (tokenSet) {
-        const retryHeaders = { ...requestHeaders, Authorization: `Bearer ${tokenSet.accessToken}` };
+        rotated = tokenSet;
+        const retryHeaders = { ...requestHeaders, Authorization: `Bearer ${rotated.accessToken}` };
         let retryUpstream: Response;
         try {
           retryUpstream = await fetch(targetUrl, {
@@ -211,7 +239,7 @@ async function proxyRequest(
           });
         } catch (err) {
           console.error(`[Proxy] 업스트림 재시도 요청 실패: ${request.method} ${targetPath}`, err);
-          return NextResponse.json({ error: '업스트림 서버 연결 실패' }, { status: 502 });
+          return applyRotatedCookies(NextResponse.json({ error: '업스트림 서버 연결 실패' }, { status: 502 }));
         }
 
         const retryResponse = new NextResponse(retryUpstream.body, {
@@ -220,13 +248,12 @@ async function proxyRequest(
           headers: buildResponseHeaders(retryUpstream),
         });
         retryResponse.headers.set('Cache-Control', 'no-store');
-        // 회전 계약 — access·refresh 동시 갱신(하나만 갱신하면 다음 refresh가 소비된 토큰을 재제시)
-        retryResponse.cookies.set(COOKIE_ACCESS_TOKEN, tokenSet.accessToken, SESSION_COOKIE_OPTIONS);
-        retryResponse.cookies.set(COOKIE_REFRESH_TOKEN, tokenSet.refreshToken, SESSION_COOKIE_OPTIONS);
-        return retryResponse;
+        return applyRotatedCookies(retryResponse);
       }
     }
-    // refresh 실패 또는 refresh_token 없음
+    // refresh 실패 또는 refresh_token 없음 — 이 분기에 도달했다는 것은 위 어느 회전도 성공하지
+    // 않았다는 뜻이라 rotated는 항상 undefined다(아래 wrapping은 현재는 no-op이지만, 이 가드
+    // 조건이 미래에 바뀌어도 회전 유실이 재발하지 않도록 균일 적용해둔다).
     if (mode === 'hybrid') {
       try {
         const anonHeaders: Record<string, string> = {};
@@ -242,13 +269,13 @@ async function proxyRequest(
           headers: buildResponseHeaders(anonUpstream),
         });
         anonResponse.headers.set('Cache-Control', 'no-store');
-        return anonResponse;
+        return applyRotatedCookies(anonResponse);
       } catch (err) {
         console.error(`[Proxy] HYBRID 익명 재시도 실패: ${request.method} ${targetPath}`, err);
-        return NextResponse.json({ error: '업스트림 서버 연결 실패' }, { status: 502 });
+        return applyRotatedCookies(NextResponse.json({ error: '업스트림 서버 연결 실패' }, { status: 502 }));
       }
     }
-    return unauthorizedResponse('인증이 만료되었습니다.');
+    return applyRotatedCookies(unauthorizedResponse('인증이 만료되었습니다.'));
   }
 
   const finalResponse = new NextResponse(upstream.body, {
@@ -258,12 +285,7 @@ async function proxyRequest(
   });
   // 재발버그 #5 — PRIVATE/HYBRID 응답이 브라우저·shared 캐시에 남아 다른 사용자에게 누출되는 것을 차단
   finalResponse.headers.set('Cache-Control', 'no-store');
-  if (proactiveRefreshDone && token && rotatedRefreshToken) {
-    // 회전 계약 — access·refresh 동시 갱신(하나만 갱신하면 다음 refresh가 소비된 토큰을 재제시)
-    finalResponse.cookies.set(COOKIE_ACCESS_TOKEN, token, SESSION_COOKIE_OPTIONS);
-    finalResponse.cookies.set(COOKIE_REFRESH_TOKEN, rotatedRefreshToken, SESSION_COOKIE_OPTIONS);
-  }
-  return finalResponse;
+  return applyRotatedCookies(finalResponse);
 }
 
 export const GET = proxyRequest;
