@@ -3,6 +3,8 @@
 import { useRef, useState } from 'react';
 import { useImportPreview } from '@/hooks/useImportPreview';
 import { useConfirmImport } from '@/hooks/useConfirmImport';
+import { useImportTemplate } from '@/hooks/useImportTemplate';
+import { GuestImportHeaderMismatchError } from '@/lib/api/guests';
 import { MergePreview } from './MergePreview';
 
 /**
@@ -27,6 +29,7 @@ export function ExcelUpload({ eid }: ExcelUploadProps) {
   const [sizeError, setSizeError] = useState<string | null>(null);
   const previewMutation = useImportPreview(eid);
   const confirmMutation = useConfirmImport(eid);
+  const templateMutation = useImportTemplate(eid);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] ?? null;
@@ -65,13 +68,28 @@ export function ExcelUpload({ eid }: ExcelUploadProps) {
       <h3 className="text-desk font-semibold text-ink">엑셀 명단 업로드</h3>
       <p className="text-sm text-ink-muted">미리보기입니다 — 아래 [확정]을 눌러야 실제로 반영됩니다.</p>
 
+      <button
+        type="button"
+        onClick={() => templateMutation.mutate()}
+        disabled={templateMutation.isPending}
+        className="min-h-touch w-fit rounded-card border border-line-soft px-4 text-sm font-semibold text-ink hover:bg-surface-sunken disabled:opacity-50"
+      >
+        {templateMutation.isPending ? '받는 중...' : '템플릿 받기'}
+      </button>
+      {templateMutation.isError && (
+        <p className="text-sm text-danger">양식 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.</p>
+      )}
+
       <input ref={fileInputRef} type="file" accept=".xlsx" onChange={handleFileChange} className="text-sm text-ink" />
       {sizeError && <p className="text-sm text-danger">{sizeError}</p>}
 
       {previewMutation.isPending && <p className="text-ink-muted">미리보기 확인 중...</p>}
-      {previewMutation.isError && (
-        <p className="text-sm text-danger">미리보기를 불러오지 못했습니다. 파일을 다시 선택해 주세요.</p>
-      )}
+      {previewMutation.isError &&
+        (previewMutation.error instanceof GuestImportHeaderMismatchError ? (
+          <p className="text-sm text-danger">{previewMutation.error.message}</p>
+        ) : (
+          <p className="text-sm text-danger">미리보기를 불러오지 못했습니다. 파일을 다시 선택해 주세요.</p>
+        ))}
 
       {previewMutation.data && !confirmMutation.isSuccess && (
         <>
@@ -111,9 +129,12 @@ export function ExcelUpload({ eid }: ExcelUploadProps) {
           </button>
         </div>
       )}
-      {confirmMutation.isError && (
-        <p className="text-sm text-danger">확정 중 오류가 발생했습니다. 같은 파일로 다시 시도해 주세요.</p>
-      )}
+      {confirmMutation.isError &&
+        (confirmMutation.error instanceof GuestImportHeaderMismatchError ? (
+          <p className="text-sm text-danger">{confirmMutation.error.message}</p>
+        ) : (
+          <p className="text-sm text-danger">확정 중 오류가 발생했습니다. 같은 파일로 다시 시도해 주세요.</p>
+        ))}
     </div>
   );
 }
