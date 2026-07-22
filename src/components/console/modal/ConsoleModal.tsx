@@ -27,7 +27,7 @@ const SIZE_CLASS: Record<'md' | 'lg', string> = {
  * 이 래퍼가 소유 — 이관 전 각 모달이 반복하던 `rounded-card border ... shadow-lg` 조각을
  * 여기 1곳으로 모은다.
  *
- * 오버레이 기하는 `useShellOverlay()`가 계산한 문자열을 그대로 소비한다(ADR-016) — 사이드바
+ * 오버레이 기하는 `useShellOverlay()`가 계산한 문자열을 그대로 소비한다 — 사이드바
  * 폭·탭바 유무를 이 컴포넌트가 직접 알 필요가 없다. 셸 밖에서 쓰이면(컨텍스트 null) 전체 화면
  * `fixed inset-0`으로 안전 퇴화한다.
  *

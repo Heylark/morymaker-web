@@ -52,7 +52,6 @@ export function useOverlayFocusTrap(active: boolean) {
       window.removeEventListener('keydown', handleKeyDown);
       opener?.focus();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
   return dialogRef;

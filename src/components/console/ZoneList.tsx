@@ -9,7 +9,7 @@ interface ZoneListProps {
 }
 
 /**
- * 구획 목록 — 각 행에서 상세(편집/자리 타이틀/QR)로 진입한다. 최상위 `<div>`(`EventConsoleShell`이
+ * 구획 목록 — 각 행에서 상세(편집/자리 타이틀/QR)로 진입한다. 최상위 `<div>`(`ConsoleShell`이
  * 이미 `<main>`을 보유하고 있어 여기서 또 `<main>`을 두면 랜드마크가 중복되고 셸의 `p-6`과
  * 겹쳐 여백이 두 배가 된다 — `RosterClient` 패턴을 그대로 따른다).
  */

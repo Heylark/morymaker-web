@@ -46,7 +46,7 @@ export function toFormValues(guest?: GuestResponse): GuestFormValues {
  * dirty 판정은 `formState.isDirty`(react-hook-form 내장)를 그대로 `ConsoleModal`에 넘긴다 —
  * 이 컴포넌트는 항상 마운트된 채 `open`만 토글되므로 자체 스냅샷 비교(`useDirty`)를 쓰면 페이지
  * 최초 렌더(빈 폼)가 기준점에 박제되어 무입력 상태에서도 dirty=true가 되는 오탐이 생긴다
- * (ADR-028). `values` 옵션이 편집 오픈 직후 defaultValues까지 동기화하므로 `isDirty=false`가
+ * `values` 옵션이 편집 오픈 직후 defaultValues까지 동기화하므로 `isDirty=false`가
  * 보장된다.
  */
 export function GuestEditModal({ eid, open, guest, onClose }: GuestEditModalProps) {

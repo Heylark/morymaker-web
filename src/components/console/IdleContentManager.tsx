@@ -102,7 +102,7 @@ interface IdleContentFormProps {
  *
  * dirty 판정은 `formState.isDirty`에 "파일이 선택됐는가"를 OR한다 — 이 컴포넌트만 RHF 밖에
  * 로컬 `file` state를 별도로 갖고 있어(등록 시 필수 파일 선택) `isDirty` 단독으로는 파일만
- * 고른 채 스크림을 클릭하는 경로를 놓친다(ADR-028).
+ * 고른 채 스크림을 클릭하는 경로를 놓친다.
  */
 function IdleContentForm({ eid, open, content, onClose }: IdleContentFormProps) {
   const {

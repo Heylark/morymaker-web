@@ -12,7 +12,7 @@ interface EventTabBarProps {
 /**
  * 기존 하단 탭바 이식 — 5항목·라벨·aria 그대로(핸드오프 §4 "변경 없음"). `md:hidden` 전용,
  * `z-50`은 회귀 0으로 유지한다(§5 z 스케일). 오버레이(모달·계정 시트)가 열리면 `inert`로
- * 히트테스트를 차단한다 — z 값만으로는 딤 위에 남은 탭바 클릭이 통과한다(ADR-030 실증).
+ * 히트테스트를 차단한다 — z 값만으로는 딤 위에 남은 탭바 클릭이 통과한다(실측 확인).
  */
 export function EventTabBar({ eid, inert }: EventTabBarProps) {
   const pathname = usePathname();

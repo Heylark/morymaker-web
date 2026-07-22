@@ -45,7 +45,7 @@ export function ConsoleShell({ children }: ConsoleShellProps) {
   }, []);
 
   // §6 모달 오버레이 기하 — md↑는 사이드바 폭만큼 밀려 콘텐츠 열만 덮고, 탭바가 렌더 중이면
-  // 그 위까지만 덮는다(하단 44px+safe-area 오프셋). 계정 시트도 동일 프레임을 공유한다(ADR-030).
+  // 그 위까지만 덮는다(하단 44px+safe-area 오프셋). 계정 시트도 동일 프레임을 공유한다.
   const overlayFrameClassName = useMemo(() => {
     const base =
       'fixed inset-0 z-50 md:left-[var(--shell-sidebar-w)] md:flex md:items-center md:justify-center md:p-4';
@@ -68,7 +68,7 @@ export function ConsoleShell({ children }: ConsoleShellProps) {
         <div className="relative flex min-w-0 flex-1 flex-col">
           <ShellHeader meta={meta} eid={eid} onOpenAccountSheet={() => setAccountSheetOpen(true)} />
           {/* p-6 pb-24 md:pb-6 — 하위 페이지가 자체 패딩을 갖지 않는다는 기존 계약. 폭은 하위가
-              소유한다(ADR-025) — 이 <main>은 폭을 제약하지 않는다. */}
+              소유한다 — 이 <main>은 폭을 제약하지 않는다. */}
           <main className="flex-1 p-6 pb-24 md:pb-6">{children}</main>
         </div>
 

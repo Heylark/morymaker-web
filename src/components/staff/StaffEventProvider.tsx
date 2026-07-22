@@ -67,7 +67,7 @@ export function StaffEventProvider({ children }: { children: React.ReactNode }) 
         <p className="text-desk text-ink-muted">확인 중...</p>
         {/* 이 화면은 셸(사이드바·헤더·탭바) 밖이라 복귀 동선이 0개다 — /api/auth/me 응답이
             지연·중단되면 이 분기에 고정될 수 있어 empty·unsupported와 동일하게 안전망을
-            둔다(ADR-029, 3분기 대칭). */}
+            둔다(3분기 대칭). */}
         <Link href="/landing" prefetch={false} className="text-desk text-[var(--champagne)] underline underline-offset-4">
           콘솔로 돌아가기
         </Link>
@@ -80,7 +80,7 @@ export function StaffEventProvider({ children }: { children: React.ReactNode }) 
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-surface-sunken p-6 text-center">
         <p className="text-desk text-ink-muted">배정된 행사가 없습니다. 관리자에게 문의하세요.</p>
         {/* 이 화면은 셸(사이드바·헤더·탭바) 밖이라 복귀 동선이 0개다 — 직접 URL·북마크 도달
-            대비 안전망(ADR-029). Zone2·랜딩이 이미 이 링크를 조건부로 감추므로 정상 경로로는
+            대비 안전망이다. Zone2·랜딩이 이미 이 링크를 조건부로 감추므로 정상 경로로는
             도달하지 않는다. */}
         <Link href="/landing" prefetch={false} className="text-desk text-[var(--champagne)] underline underline-offset-4">
           콘솔로 돌아가기

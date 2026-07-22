@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 /**
- * 로그아웃 종결 화면 — `SessionZone`의 로그아웃 하드 내비게이션 목적지(ADR-023).
+ * 로그아웃 종결 화면 — `SessionZone`의 로그아웃 하드 내비게이션 목적지.
  *
  * `/oauth/login`을 목적지로 두지 않는 이유: `POST /api/auth/logout`은 web 쿠키만 지울 뿐 IdP
  * 세션을 종결하지 않는다. 그 상태에서 `/oauth/login`으로 보내면 auth가 살아 있는 세션을 폼·동의

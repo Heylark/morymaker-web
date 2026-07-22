@@ -21,7 +21,7 @@ const TITLE_ID = 'account-sheet-title';
  *
  * 오버레이 프레임은 `useShellOverlay()`의 `overlayFrameClassName`을 그대로 소비한다(ConsoleModal과
  * 동일 구조) — 시트 전용 z-40 스크림을 따로 두면 탭바(z-50)가 딤 위에서 클릭을 통과시킨다
- * (ADR-030). 마운트 지점은 `ConsoleShell`의 마지막 자식으로 고정 — `ShellHeader`가
+ * 마운트 지점은 `ConsoleShell`의 마지막 자식으로 고정 — `ShellHeader`가
  * `sticky top-0 z-30`(스태킹 컨텍스트)이라 그 하위에 두면 오히려 더 확실히 탭바 아래로 가라앉는다.
  *
  * 포커스 이동·Tab 트랩·복귀는 `useOverlayFocusTrap`(ConsoleModal과 공유)이 소유한다 —

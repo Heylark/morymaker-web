@@ -90,10 +90,10 @@ describe('console-routes — resolveHeaderMeta (미등록 경로 — 안전 퇴�
 });
 
 /**
- * V19 — statusPillTone 클래스 단언 대상 순수 함수. 정본 대조(ADR-026): 운영중=pending(정본
+ * V19 — statusPillTone 클래스 단언 대상 순수 함수. 정본 대조: 운영중=pending(정본
  * `.pill`) / 준비·종료=void(정본 `.pill dim`). 'done'은 콘솔 셸 씬에 대응물이 없어 반환하지 않는다.
  */
-describe('console-routes — statusPillTone (ADR-026 정본 대조)', () => {
+describe('console-routes — statusPillTone (정본 대조)', () => {
   it('운영중은 pending이다', () => {
     expect(statusPillTone('운영중')).toBe('pending');
   });

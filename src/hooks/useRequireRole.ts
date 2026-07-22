@@ -37,7 +37,7 @@ export function useRequireRole(roles: readonly string[]): UseRequireRoleResult {
       .then((d: { user: { username: string; roles: string[] } | null }) => {
         const outcome = resolveGateOutcome(d.user?.roles ?? null, roles);
         if (outcome === 'UNAUTHENTICATED') {
-          // returnTo는 usePathname()만 쓰고 쿼리스트링은 붙이지 않는다(ADR-013) — 이 훅은
+          // returnTo는 usePathname()만 쓰고 쿼리스트링은 붙이지 않는다 — 이 훅은
           // (console)·(staff)·(landing) 그룹 전체를 감싸는 gate-client에서 호출되므로,
           // useSearchParams()까지 병용하면 하위 전 라우트가 CSR bailout 대상이 되어 정적
           // 프리렌더 빌드가 실패할 수 있다(SPA 조작 중 만료된 경우에 한해 쿼리가 유실된다 —

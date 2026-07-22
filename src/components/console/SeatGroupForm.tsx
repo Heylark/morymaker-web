@@ -33,7 +33,7 @@ export function toFormValues(group?: SeatGroupResponse): SeatGroupFormValues {
  * (GuestEditModal 주석 근거 동일). groupNo·sortOrder는 서버 자동 채번/불변이라 이 폼에 아예
  * 노출하지 않는다.
  *
- * dirty 판정은 `formState.isDirty`를 그대로 넘긴다 — GuestEditModal과 동일 이유(ADR-028).
+ * dirty 판정은 `formState.isDirty`를 그대로 넘긴다 — GuestEditModal과 동일 이유다.
  */
 export function SeatGroupForm({ eid, open, group, onClose }: SeatGroupFormProps) {
   const {

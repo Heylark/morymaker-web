@@ -39,7 +39,7 @@ export function toEditFormValues(account?: AccountResponse): AccountEditFormValu
  * `account`가 바뀔 때마다 폼을 동기화하므로(GuestEditModal과 동일 이유) 편집 대상이 바뀌어도
  * 빈 폼으로 열리는 버그가 없다.
  *
- * dirty 판정은 `formState.isDirty`를 그대로 넘긴다 — GuestEditModal과 동일 이유(ADR-028).
+ * dirty 판정은 `formState.isDirty`를 그대로 넘긴다 — GuestEditModal과 동일 이유다.
  * `account`가 없으면(호출부 불변식상 `open=true`와 항상 함께 전달되지만, 방어적으로) 폼 자체를
  * 렌더하지 않는다 — `account.email` 등을 아예 참조하지 않도록 `ConsoleModal` 호출 전에 가른다.
  */

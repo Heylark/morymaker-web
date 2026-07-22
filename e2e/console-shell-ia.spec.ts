@@ -76,7 +76,7 @@ test.describe('REQ-0046 — §1 라우트·리다이렉트 규칙 (V1~V4, V6)', 
     const guestPaths = ['/r/nonexistent-code', '/p/nonexistent-slot', '/u/nonexistent-token', '/kiosk', '/visitor'];
     for (const path of guestPaths) {
       const res = await page.request.get(`/app${path}`, { maxRedirects: 0 });
-      // 게스트 표면은 middleware matcher(§ADR-009) 밖이라 대부분 200/404로 응답하고 리다이렉트
+      // 게스트 표면은 middleware matcher 밖이라 대부분 200/404로 응답하고 리다이렉트
       // 자체가 없다(location 헤더 부재) — 그 경우는 자명하게 통과. 3xx가 나오더라도(예: 잘못된
       // 코드에 대한 페이지 내부 안내 리다이렉트) /oauth/login으로 가지만 않으면 middleware
       // 가로챔이 아니다. .not.toContain(undefined)는 매처 오류이므로 location 부재를 먼저 분기한다.
@@ -109,7 +109,7 @@ test.describe('REQ-0046 — §1 라우트·리다이렉트 규칙 (V1~V4, V6)', 
     await login(page, SYSTEM_ADMIN_EMAIL, SYSTEM_ADMIN_PASSWORD, '/landing');
     const res = await page.request.get('/app/oauth/login', { maxRedirects: 0 });
     expect([307, 308]).toContain(res.status());
-    // ADR-022 — 이 단락은 Route Handler라 getPublicOrigin()으로 절대 URL을 만든다(리버스
+    // 이 단락은 Route Handler라 getPublicOrigin()으로 절대 URL을 만든다(리버스
     // 프록시 뒤 standalone 대비 의도된 설계). 헤더 원문이 절대 URL이어도 pathname을 파싱해
     // 이중 접두(/app/app/landing)·누락(/landing)이 아닌 정확히 1회 접두(/app/landing)인지 확인한다.
     const location = res.headers()['location'];
@@ -309,7 +309,7 @@ test.describe('REQ-0046 — 로그아웃 (V15)', () => {
   }) => {
     await login(page, SYSTEM_ADMIN_EMAIL, SYSTEM_ADMIN_PASSWORD, '/events');
 
-    // `?prompt=login`은 "이미 로그인됨" 단락을 건너뛰고 항상 새 PKCE 페어를 발급한다(ADR-011) —
+    // `?prompt=login`은 "이미 로그인됨" 단락을 건너뛰고 항상 새 PKCE 페어를 발급한다 —
     // 다른 탭에서 로그인을 다시 개시했지만 콜백까지는 안 간 상태를 인위적으로 재현한다.
     // maxRedirects:0으로 외부 auth 도메인(authorize URL)까지는 따라가지 않는다 — Set-Cookie만
     // 필요하다. page.request는 브라우저 컨텍스트와 쿠키 저장소를 공유하므로 이 응답의
@@ -440,7 +440,7 @@ test.describe('REQ-0046 — 모달 dirty 가드 (V9, V9-b)', () => {
 test.describe('REQ-0046 — SeatAssignModal(자유석) dirty 가드 — useDirty 유일 소비처 커버리지 보완', () => {
   // ⚠️ 확증 공백 2 보완 — useDirty의 유일 실사용처는 SeatAssignModal(자유석 memberIds 변경
   // 포함)인데, 어떤 신규 E2E도 좌석 배정 모달을 열지 않아 이 훅에 커버리지가 0이었다.
-  // (ADR-028이 정확히 이 소비처를 위해 만든 시그니처 — `useDirty.ts`를 `return false`로
+  // (`useDirty`의 `open` 인자가 정확히 이 소비처를 위해 만든 시그니처 — `useDirty.ts`를 `return false`로
   // 치환해도 GREEN을 유지했던 거짓 그린을 여기서 닫는다.)
   test('자유석 그룹에서 멤버 추가 후 스크림 클릭 시 confirm 노출(dirty=true), 취소 시 배정 유지', async ({ page }) => {
     await login(page, SYSTEM_ADMIN_EMAIL, SYSTEM_ADMIN_PASSWORD, '/events');
@@ -550,7 +550,7 @@ test.describe('REQ-0046 — §7 수용 기준 (핸드오프 QA 체크리스트)'
     // useRequireRole은 gate-client 마운트 시 1회 /api/auth/me를 호출해 세션을 재확인한다
     // (SPA 네비게이션 중 만료 감지 — 서버 게이트가 못 잡는 영역). 쿠키는 유효한 채로 두고
     // 이 재확인 호출만 무인증 응답으로 가로채 "화면은 이미 로드됐는데 세션이 그 사이 만료된"
-    // 상태를 재현한다(쿠키까지 지우면 middleware가 먼저 막아 이 훅에 도달하지 못함 — T-011이
+    // 상태를 재현한다(쿠키까지 지우면 middleware가 먼저 막아 이 훅에 도달하지 못함 — 이번 변경이
     // 고친 것은 정확히 이 훅의 returnTo 누락이므로 훅이 실행되는 경로로 진입해야 한다).
     await login(page, SYSTEM_ADMIN_EMAIL, SYSTEM_ADMIN_PASSWORD, '/landing');
     await page.route('**/api/auth/me', (route) => route.fulfill({ status: 200, json: { user: null } }));

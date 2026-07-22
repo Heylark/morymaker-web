@@ -35,7 +35,7 @@ describe('console-nav — isNavItemActive (Zone3·하단 탭바 활성 판정)',
 });
 
 /**
- * Zone2 활성 판정 — eid 존재 여부로 완전히 갈린다(ADR-024). `isNavItemActive`를 그대로 쓰면
+ * Zone2 활성 판정 — eid 존재 여부로 완전히 갈린다. `isNavItemActive`를 그대로 쓰면
  * `/events`가 Zone3 전 항목의 진접두라 상세 8화면에서 aria-current가 2개가 된다.
  */
 describe('console-nav — isServiceNavItemActive (Zone2 전용 — eid 존재 시 항상 false)', () => {
@@ -90,7 +90,7 @@ describe('console-nav — EVENT_NAV_ITEMS·EVENT_TABBAR_ITEMS 좌표계 (basePat
 
 /**
  * V5-b — serviceNavItemsFor 5조합 + 로딩. 역할별 기대 항목 라벨 집합까지 명시한다(개수 단언만으로는
- * 항목 뒤바뀜 회귀를 못 잡는다). SYSTEM_ADMIN 2항목 확정은 ADR-029(scan 배정 단일성 조건) 반영.
+ * 항목 뒤바뀜 회귀를 못 잡는다). SYSTEM_ADMIN 2항목 확정은 scan 배정 단일성 조건 반영.
  */
 describe('console-nav — serviceNavItemsFor (V5 정정: 3/2/1 + V5-b 5조합)', () => {
   it('SYSTEM_ADMIN(eventIds=null)은 행사 목록·계정 관리 2항목만 렌더한다(scan은 배정 1건 조건 미충족)', () => {

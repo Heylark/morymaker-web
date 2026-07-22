@@ -7,7 +7,7 @@ import { AccountList } from '@/components/console/AccountList';
  * ADM-11 — 계정·권한 목록. `/accounts`는 [eid] 컨텍스트 밖 시스템 레벨이라 `EventScopeGate`를
  * 쓰지 않는다. 제목·"+ 계정 추가" CTA는 `ShellHeader`가 라우트 레지스트리로 파생하므로 이
  * 파일은 본문만 소유한다. `<main>`은 상위 `ConsoleShell` 소유라 `<div>`로 강등해 폭·세로
- * 리듬만 스스로 소유한다(ADR-025).
+ * 리듬만 스스로 소유한다.
  */
 export default function AccountsPage() {
   const { data: accounts, isLoading, isError } = useAccounts();
