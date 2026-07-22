@@ -82,14 +82,13 @@ test.describe('REQ-0046 모바일 — 상단 바 CTA 크기 (V20)', () => {
 });
 
 test.describe('REQ-0046 모바일 — /landing 375px 가로 오버플로 (확증 공백 7 보완)', () => {
-  // ⚠️ 이 테스트는 앱 코드(src) 결함을 그대로 드러내기 위한 것으로, 통과가 아니라 FAIL이
-  // 예상된다(Tester는 src를 수정하지 않는다 — 구현 결함 보고만). 근거: 375×812 모바일 수동
-  // 캡처 세트에서 landing.png만 432px 폭으로 저장됐다(나머지 5장은 정확히 375px) — `sips
-  // -g pixelWidth`로 확인. LandingClient.tsx의 h1(`안녕하세요, {displayNameOf(username)}님`)이
-  // 이메일 원문을 래핑 클래스(break-words 등) 없이 display 크기로 렌더해, 로컬파트가 긴
-  // 이메일(SYSTEM_ADMIN 계정은 `dev-verify`로 짧아 안 걸림 — EVENT_ADMIN 계정의
-  // `req0018-06-tester-event-admin`이 분해 불가 토큰이 되어 375px를 넘긴다.
-  test('EVENT_ADMIN 계정(긴 이메일)으로 로그인한 랜딩 h1이 375px 뷰포트를 가로로 넘치지 않는다', async ({
+  // 랜딩 헤더(LandingClient.tsx)의 세션 영역(SessionZone, variant="bar")이 헤더의 두 번째
+  // flex 아이템으로 들어가는데, 루트 클래스에 min-w-0이 없으면 flex 아이템 기본 최소폭
+  // (min-width:auto)이 콘텐츠(이메일 원문) 폭으로 고정돼 내부 truncate가 무력화되고 헤더가
+  // 뷰포트 밖으로 확장된다. h1(`안녕하세요, {displayNameOf(username)}님`)은 이미
+  // break-words로 자체 래핑되어 무관하다 — 병목은 h1이 아니라 헤더의 세션 영역이다. 이
+  // 결함은 이메일 로컬파트 길이와 무관하게 재현된다(짧은 SYSTEM_ADMIN 계정에서도 발생).
+  test('EVENT_ADMIN 계정(긴 이메일)으로 로그인한 랜딩 헤더가 375px 뷰포트를 가로로 넘치지 않는다', async ({
     page,
   }) => {
     await page.goto('/landing');
@@ -97,7 +96,13 @@ test.describe('REQ-0046 모바일 — /landing 375px 가로 오버플로 (확증
     await page.locator('input[name="password"]').fill('TesterPassw0rd1!');
     await page.locator('button[type="submit"]').click();
     await page.waitForURL('**/landing');
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+    // 세션 이메일이 실제로 렌더된 뒤에 폭을 재야 한다 — useMe() 응답이 늦게 도착하면 h1은
+    // 그 전에도 '로그인 계정' 플레이스홀더로 이미 visible이라, toBeVisible()만으로는 이메일
+    // 미도착 상태의(우연히 짧은) 폭을 측정해 결함이 있어도 통과할 수 있다.
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(
+      'req0018-06-tester-event-admin@morymaker.local',
+    );
 
     const overflow = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
@@ -105,7 +110,7 @@ test.describe('REQ-0046 모바일 — /landing 375px 가로 오버플로 (확증
     }));
     expect(
       overflow.scrollWidth,
-      `문서 scrollWidth(${overflow.scrollWidth})가 뷰포트 폭(${overflow.innerWidth})을 넘으면 안 됨 — h1 이메일 래핑 부재로 가로 오버플로 발생`,
+      `문서 scrollWidth(${overflow.scrollWidth})가 뷰포트 폭(${overflow.innerWidth})을 넘으면 안 됨 — 랜딩 헤더 세션 영역(SessionZone variant="bar")의 truncate 무력화로 가로 오버플로 발생 가능`,
     ).toBeLessThanOrEqual(overflow.innerWidth);
   });
 });
