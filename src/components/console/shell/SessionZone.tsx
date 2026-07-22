@@ -36,7 +36,12 @@ export function SessionZone({ variant }: SessionZoneProps) {
     variant === 'sidebar'
       ? 'mt-auto flex items-center gap-3 border-t border-line-soft px-4 py-4'
       : variant === 'bar'
-        ? 'flex items-center gap-3'
+        ? // 랜딩 헤더(`flex items-center justify-between`)의 두 번째 flex 아이템으로 들어간다.
+          // min-w-0이 없으면 flex 아이템의 기본 최소폭(min-width:auto)이 콘텐츠(이메일 원문)
+          // 크기로 고정돼 shrink가 발동하지 않고, 내부 `min-w-0 flex-1` 블록이 잘라낼 폭을
+          // 상위에서 받지 못해 truncate가 무력화된다(사이드바는 aside 자체가 고정폭이라
+          // 이 문제가 없다 — 동일한 min-w-0 함정, 적용 위치만 다르다).
+          'min-w-0 flex items-center gap-3'
         : 'flex items-center gap-3 py-2';
 
   return (
