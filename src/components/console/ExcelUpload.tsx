@@ -4,7 +4,11 @@ import { useRef, useState } from 'react';
 import { useImportPreview } from '@/hooks/useImportPreview';
 import { useConfirmImport } from '@/hooks/useConfirmImport';
 import { useImportTemplate } from '@/hooks/useImportTemplate';
-import { GuestImportHeaderMismatchError } from '@/lib/api/guests';
+import {
+  GuestImportFilePasswordProtectedError,
+  GuestImportFileUnreadableError,
+  GuestImportHeaderMismatchError,
+} from '@/lib/api/guests';
 import { MergePreview } from './MergePreview';
 
 /**
@@ -63,6 +67,23 @@ export function ExcelUpload({ eid }: ExcelUploadProps) {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  // 서버가 안내 문장을 조립해 내려주는 업로드 오류들 — 화면은 그 문장을 그대로 노출한다(문구 소유권은
+  // 서버). 셋은 원인도 해결 방법도 다르지만 화면이 추가로 그릴 것은 없다. 양식 받기 버튼은 항상 떠
+  // 있고 암호 해제는 화면 밖 작업이라, 차이는 문장 안에서 이미 전달된다.
+  const previewGuidance =
+    previewMutation.error instanceof GuestImportHeaderMismatchError ||
+    previewMutation.error instanceof GuestImportFileUnreadableError ||
+    previewMutation.error instanceof GuestImportFilePasswordProtectedError
+      ? previewMutation.error.message
+      : null;
+
+  const confirmGuidance =
+    confirmMutation.error instanceof GuestImportHeaderMismatchError ||
+    confirmMutation.error instanceof GuestImportFileUnreadableError ||
+    confirmMutation.error instanceof GuestImportFilePasswordProtectedError
+      ? confirmMutation.error.message
+      : null;
+
   return (
     <div className="flex flex-col gap-3 rounded-card border border-line-soft bg-surface p-4">
       <h3 className="text-desk font-semibold text-ink">엑셀 명단 업로드</h3>
@@ -84,12 +105,11 @@ export function ExcelUpload({ eid }: ExcelUploadProps) {
       {sizeError && <p className="text-sm text-danger">{sizeError}</p>}
 
       {previewMutation.isPending && <p className="text-ink-muted">미리보기 확인 중...</p>}
-      {previewMutation.isError &&
-        (previewMutation.error instanceof GuestImportHeaderMismatchError ? (
-          <p className="text-sm text-danger">{previewMutation.error.message}</p>
-        ) : (
-          <p className="text-sm text-danger">미리보기를 불러오지 못했습니다. 파일을 다시 선택해 주세요.</p>
-        ))}
+      {previewMutation.isError && (
+        <p className="text-sm text-danger">
+          {previewGuidance ?? '미리보기를 불러오지 못했습니다. 파일을 다시 선택해 주세요.'}
+        </p>
+      )}
 
       {previewMutation.data && !confirmMutation.isSuccess && (
         <>
@@ -129,12 +149,11 @@ export function ExcelUpload({ eid }: ExcelUploadProps) {
           </button>
         </div>
       )}
-      {confirmMutation.isError &&
-        (confirmMutation.error instanceof GuestImportHeaderMismatchError ? (
-          <p className="text-sm text-danger">{confirmMutation.error.message}</p>
-        ) : (
-          <p className="text-sm text-danger">확정 중 오류가 발생했습니다. 같은 파일로 다시 시도해 주세요.</p>
-        ))}
+      {confirmMutation.isError && (
+        <p className="text-sm text-danger">
+          {confirmGuidance ?? '확정 중 오류가 발생했습니다. 같은 파일로 다시 시도해 주세요.'}
+        </p>
+      )}
     </div>
   );
 }

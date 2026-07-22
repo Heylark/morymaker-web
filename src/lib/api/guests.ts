@@ -17,6 +17,12 @@ const guestsBase = (eid: string) => `api/events/${eid}/guests`;
 /** 업로드 양식(머리글) 계약 불일치 — 서버가 내려주는 전용 에러 코드(공통 에러 봉투의 error.code). */
 export const IMPORT_HEADER_MISMATCH = 'IMPORT_HEADER_MISMATCH';
 
+/** 업로드 파일을 엑셀로 열 수 없음 — 서버가 내려주는 전용 에러 코드(공통 에러 봉투의 error.code). */
+export const IMPORT_FILE_UNREADABLE = 'IMPORT_FILE_UNREADABLE';
+
+/** 업로드 엑셀에 열기 암호가 걸림 — 손상과 안내가 달라 코드를 분리한다. */
+export const IMPORT_FILE_PASSWORD_PROTECTED = 'IMPORT_FILE_PASSWORD_PROTECTED';
+
 /**
  * 업로드 엑셀 0행 머리글이 업로드 양식과 다름 — 어긋난 칸 안내를 서버 message 그대로 보존해
  * 노출하기 위해 ConsoleApiError와 분리한다(ConsoleApiError.message는 "콘솔 API 요청 실패
@@ -29,6 +35,31 @@ export class GuestImportHeaderMismatchError extends Error {
   ) {
     super(message);
     this.name = 'GuestImportHeaderMismatchError';
+  }
+}
+
+/**
+ * 업로드한 파일이 엑셀이 아니거나 손상됨 — 머리글 불일치와 같은 이유로 ConsoleApiError와 분리한다
+ * (ConsoleApiError.message는 고정 포맷이라 서버가 조립한 안내 문구를 담지 못한다).
+ */
+export class GuestImportFileUnreadableError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'GuestImportFileUnreadableError';
+  }
+}
+
+/** 업로드한 엑셀에 열기 암호가 걸림 — 해결 방법이 손상과 달라(암호 해제) 타입을 나눈다. */
+export class GuestImportFilePasswordProtectedError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'GuestImportFilePasswordProtectedError';
   }
 }
 
@@ -46,6 +77,15 @@ async function throwOnImportError(res: Response): Promise<never> {
   const code = body?.error?.code ?? 'UNKNOWN_ERROR';
   if (code === IMPORT_HEADER_MISMATCH) {
     throw new GuestImportHeaderMismatchError(res.status, body?.error?.message ?? '엑셀 머리글을 확인해 주세요.');
+  }
+  if (code === IMPORT_FILE_UNREADABLE) {
+    throw new GuestImportFileUnreadableError(res.status, body?.error?.message ?? '엑셀 파일을 열 수 없습니다.');
+  }
+  if (code === IMPORT_FILE_PASSWORD_PROTECTED) {
+    throw new GuestImportFilePasswordProtectedError(
+      res.status,
+      body?.error?.message ?? '엑셀 파일의 암호를 해제한 뒤 다시 올려 주세요.',
+    );
   }
   throw new ConsoleApiError(res.status, code);
 }
