@@ -1,5 +1,6 @@
 import { proxyFetch } from '@/lib/proxy-fetch';
 import { throwOnError } from './console-http';
+import { ConsoleApiError } from './console';
 import type {
   GuestResponse,
   GuestCreateRequest,
@@ -12,6 +13,42 @@ import type {
 
 const guestsBase = (eid: string) => `api/events/${eid}/guests`;
 // trailing slash 없음 — next.config에 trailingSlash 미설정(console.ts 패턴 계승).
+
+/** 업로드 양식(머리글) 계약 불일치 — 서버가 내려주는 전용 에러 코드(공통 에러 봉투의 error.code). */
+export const IMPORT_HEADER_MISMATCH = 'IMPORT_HEADER_MISMATCH';
+
+/**
+ * 업로드 엑셀 0행 머리글이 업로드 양식과 다름 — 어긋난 칸 안내를 서버 message 그대로 보존해
+ * 노출하기 위해 ConsoleApiError와 분리한다(ConsoleApiError.message는 "콘솔 API 요청 실패
+ * (status code)" 고정 포맷이라 서버가 조립한 안내 문구를 담지 못한다).
+ */
+export class GuestImportHeaderMismatchError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'GuestImportHeaderMismatchError';
+  }
+}
+
+interface ImportApiErrorBody {
+  error: { code: string; message: string };
+}
+
+/**
+ * import 계열(previewImport/confirmImport) 전용 에러 변환. 공유 `throwOnError`(console-http.ts)는
+ * message를 버려 헤더 불일치 안내 문구가 사라지므로 여기서만 분기한다. `Response.json()`은 1회
+ * 소비이므로 본문을 읽은 뒤 `throwOnError`를 재호출할 수 없다 — 여기서 직접 던진다.
+ */
+async function throwOnImportError(res: Response): Promise<never> {
+  const body: ImportApiErrorBody | null = await res.json().catch(() => null);
+  const code = body?.error?.code ?? 'UNKNOWN_ERROR';
+  if (code === IMPORT_HEADER_MISMATCH) {
+    throw new GuestImportHeaderMismatchError(res.status, body?.error?.message ?? '엑셀 머리글을 확인해 주세요.');
+  }
+  throw new ConsoleApiError(res.status, code);
+}
 
 /**
  * VIP 행사 특성상(참석자 수 통상 수백 이내) 페이지네이션 UI를 도입하지 않고 넉넉한 단일
@@ -76,7 +113,7 @@ export async function previewImport(eid: string, file: File): Promise<GuestImpor
   formData.append('file', file);
   // Content-Type 헤더 직접 설정 금지 — 브라우저가 boundary 포함해 자동 설정(react.md §6).
   const res = await proxyFetch(`${guestsBase(eid)}/import/preview`, { method: 'POST', body: formData });
-  if (!res.ok) return throwOnError(res);
+  if (!res.ok) return throwOnImportError(res);
   const body: { data: GuestImportPreviewResponse } = await res.json();
   return body.data;
 }
@@ -86,7 +123,16 @@ export async function confirmImport(eid: string, file: File): Promise<GuestImpor
   const formData = new FormData();
   formData.append('file', file);
   const res = await proxyFetch(`${guestsBase(eid)}/import`, { method: 'POST', body: formData });
-  if (!res.ok) return throwOnError(res);
+  if (!res.ok) return throwOnImportError(res);
   const body: { data: GuestImportResultResponse } = await res.json();
   return body.data;
+}
+
+/**
+ * 업로드 양식(.xlsx) 다운로드 — 서버가 컬럼 계약(파서와 동일 정의)에서 생성한 고정 바이트를
+ * 반환한다(행사별 데이터 없음). raw Response를 그대로 반환해 소비 측(useImportTemplate)이
+ * Content-Type을 확인해 JSON 에러를 xlsx로 저장하지 않게 막는다(downloadStatsExcel과 동일 계약).
+ */
+export function downloadImportTemplate(eid: string): Promise<Response> {
+  return proxyFetch(`${guestsBase(eid)}/import/template`);
 }
