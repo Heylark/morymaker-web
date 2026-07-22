@@ -97,9 +97,9 @@ describe('GET /oauth/callback — 공개 origin 리다이렉트 (회귀 봉인)'
     );
     const response = await callbackGET(callbackRequest);
 
-    // "쿠키 없음" 재시도였다면 착지가 /app/oauth/login이었을 것 — 성공 경로(기본 returnTo=/console) 도달로
-    // 콜백이 login 발급 쿠키를 실제로 인식했음을 확인한다.
-    expect(response.headers.get('location')).toBe(`${PUBLIC_ORIGIN}/app/console`);
+    // "쿠키 없음" 재시도였다면 착지가 /app/oauth/login이었을 것 — 성공 경로(기본 returnTo=/landing)
+    // 도달로 콜백이 login 발급 쿠키를 실제로 인식했음을 확인한다.
+    expect(response.headers.get('location')).toBe(`${PUBLIC_ORIGIN}/app/landing`);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 

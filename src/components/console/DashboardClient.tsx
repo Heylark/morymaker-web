@@ -9,7 +9,7 @@ interface DashboardClientProps {
 }
 
 /**
- * ADM-03 행사 현황 오케스트레이터 — 최상위 `<div>`(`EventConsoleShell`이 이미 `<main>`을
+ * ADM-03 행사 현황 오케스트레이터 — 최상위 `<div>`(`ConsoleShell`이 이미 `<main>`을
  * 보유하고 있어 여기서 또 `<main>`을 두면 랜드마크가 중복된다 — SeatsClient/ZoneList와 동일
  * 관용구). `useStats`가 15초 폴링을 국소 적용하므로 이 컴포넌트는 조회 상태 분기만 담당한다.
  */

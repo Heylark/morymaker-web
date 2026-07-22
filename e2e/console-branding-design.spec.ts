@@ -382,6 +382,67 @@ test.describe('콘솔 브랜딩·대기화면(ADM-04) — 컬러·프리뷰·nul
   });
 
   /**
+   * 대기화면 등록 모달 — 데스크톱 뷰포트 높이 상한 회귀 봉합(적대적 검토 확증 blocker 반영,
+   * 부록 A-1). 되돌림 전에는 `ConsoleModal` 카드가 `md:max-h-none`으로 데스크톱 높이 상한을
+   * 잃어 `overflow-y-auto`가 무력화됐고, 파일 미리보기가 붙은 긴 콘텐츠(이 테스트가 재현하는
+   * 이름+파일+미리보기+노출모드+재생옵션+정렬순서 전체 필드 조합)에서 카드가 1280×720 뷰포트를
+   * 넘어 [등록] 버튼이 화면 밖에 렌더됐다(DOM `.click()`은 성공하나 Playwright 마우스 클릭은
+   * `<html> intercepts pointer events`로 30s 타임아웃 — 스크린샷 육안으로는 검출 불가).
+   * 되돌림 반영 후에는 카드가 모바일·데스크톱 모두 `max-h-[85vh]` 상한을 갖고 카드 **내부**
+   * 스크롤로 처리되므로, `scrollIntoViewIfNeeded` 후 뷰포트 안에 있고 실제 마우스 클릭이
+   * 도달하는지 직접 단언한다(POST를 모의해 로컬 개발 DB에 영향 없이 클릭 도달만 검증).
+   */
+  test('대기화면 등록 모달 — 긴 콘텐츠에서도 데스크톱 뷰포트 안에서 저장 버튼에 실제 클릭이 도달한다 (A-1 되돌림 반영)', async ({
+    page,
+  }) => {
+    await login(page);
+
+    let posted = false;
+    await page.route(`**/api/proxy/api/events/${EID}/idle-contents`, async (route) => {
+      if (route.request().method() !== 'POST') return route.continue();
+      posted = true;
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: {
+            id: 'e2e-a1-viewport-fake',
+            name: 'A1뷰포트검증',
+            kind: '이미지',
+            mode: null,
+            play: null,
+            sortOrder: 0,
+            fileUrl: 'https://example.com/fake-a1.png',
+          },
+        }),
+      });
+    });
+
+    await page.goto(`/events/${EID}/branding`);
+    await page.getByRole('button', { name: '콘텐츠 등록' }).click();
+    await expect(page.getByRole('heading', { name: '대기화면 콘텐츠 등록' })).toBeVisible();
+
+    await page.getByLabel('이름 (필수)').fill('A1뷰포트검증');
+    await page
+      .getByLabel('파일 (필수)')
+      .setInputFiles({ name: 'a1-viewport.png', mimeType: 'image/png', buffer: TINY_PNG_BUFFER });
+    await expect(page.getByRole('img', { name: '선택한 파일 미리보기' })).toBeVisible();
+    // 카드 총 높이를 1280×720 뷰포트 대비 더 밀어올려 되돌림 전 결함(카드 772.8px vs 뷰포트
+    // 720px)을 안정적으로 재현한다 — 필드 자체(노출 모드·재생 옵션)는 채우지 않아도 렌더되지만
+    // 값을 채우면 select 옵션 렌더 등으로 레이아웃이 안정된다.
+    await page.getByLabel('재생 옵션 (선택)').fill('자동재생 반복');
+
+    const submitBtn = page.getByRole('button', { name: '등록', exact: true });
+    await submitBtn.scrollIntoViewIfNeeded();
+    await expect(submitBtn).toBeInViewport();
+    await submitBtn.click();
+
+    await expect
+      .poll(() => posted, { message: 'POST idle-contents가 실제 마우스 클릭으로 발사돼야 함(도달 불가 회귀 재발 시 FAIL)' })
+      .toBe(true);
+  });
+
+  /**
    * 대기화면 등록 — 실 업로드 왕복(콘솔 업로드 → 실 저장 → 키오스크 재생 완료 기준 핵심). multipart 전송이라
    * postDataJSON()으로 필드를 가로챌 수 없어 이 테스트는 목(mock) 없이 실제 api까지 왕복시키고,
    * 응답 JSON(kind 자동파생·fileUrl 절대 URL)을 실측한 뒤 **같은 fileUrl을 키오스크 대기화면이

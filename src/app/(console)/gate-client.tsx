@@ -1,6 +1,7 @@
 'use client';
 
 import { useRequireAdmin } from '@/hooks/useRequireAdmin';
+import { ConsoleShell } from '@/components/console/shell/ConsoleShell';
 
 /**
  * 클라 반응형 게이트 부착 지점 — 서버 layout이 초기 진입은 이미 차단했으므로 children을
@@ -21,7 +22,7 @@ export function ConsoleGateClient({ children }: { children: React.ReactNode }) {
   useRequireAdmin();
   return (
     <div data-theme="light" data-console-scope className="min-h-dvh bg-[var(--void)] text-[var(--ivory)]">
-      {children}
+      <ConsoleShell>{children}</ConsoleShell>
     </div>
   );
 }

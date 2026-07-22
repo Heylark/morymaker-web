@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useCreateGuest } from '@/hooks/useCreateGuest';
 import { useUpdateGuest } from '@/hooks/useUpdateGuest';
 import type { GuestResponse } from '@/types/guest';
+import { ConsoleModal } from './modal/ConsoleModal';
 
 interface GuestFormValues {
   name: string;
@@ -41,13 +42,19 @@ export function toFormValues(guest?: GuestResponse): GuestFormValues {
  * 열리는 버그). `values` 옵션은 매 렌더 `guest`가 바뀔 때마다(react-hook-form 내부 deep-equal
  * 비교) 폼을 동기화하므로 편집 오픈 시 현재 값이 채워지고, 개별 등록("new")으로 되돌아가면
  * 다시 빈 값으로 리셋된다.
+ *
+ * dirty 판정은 `formState.isDirty`(react-hook-form 내장)를 그대로 `ConsoleModal`에 넘긴다 —
+ * 이 컴포넌트는 항상 마운트된 채 `open`만 토글되므로 자체 스냅샷 비교(`useDirty`)를 쓰면 페이지
+ * 최초 렌더(빈 폼)가 기준점에 박제되어 무입력 상태에서도 dirty=true가 되는 오탐이 생긴다
+ * `values` 옵션이 편집 오픈 직후 defaultValues까지 동기화하므로 `isDirty=false`가
+ * 보장된다.
  */
 export function GuestEditModal({ eid, open, guest, onClose }: GuestEditModalProps) {
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<GuestFormValues>({
     defaultValues: toFormValues(guest),
     values: toFormValues(guest),
@@ -55,8 +62,6 @@ export function GuestEditModal({ eid, open, guest, onClose }: GuestEditModalProp
   const createMutation = useCreateGuest(eid);
   const updateMutation = useUpdateGuest(eid);
   const pending = createMutation.isPending || updateMutation.isPending;
-
-  if (!open) return null;
 
   const onSubmit = async (values: GuestFormValues) => {
     const payload = {
@@ -77,13 +82,8 @@ export function GuestEditModal({ eid, open, guest, onClose }: GuestEditModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex w-full max-w-md flex-col gap-4 rounded-card border border-line-soft bg-surface p-6 shadow-lg"
-      >
-        <h2 className="text-desk-lg font-semibold text-ink">{guest ? '참석자 수정' : '개별 등록'}</h2>
-
+    <ConsoleModal open={open} onClose={onClose} title={guest ? '참석자 수정' : '개별 등록'} dirty={isDirty} size="md">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
           <span className="text-sm text-ink-muted">이름 (필수)</span>
           <input
@@ -134,6 +134,6 @@ export function GuestEditModal({ eid, open, guest, onClose }: GuestEditModalProp
           <p className="text-sm text-danger">저장 중 오류가 발생했습니다.</p>
         )}
       </form>
-    </div>
+    </ConsoleModal>
   );
 }

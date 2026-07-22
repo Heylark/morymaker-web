@@ -49,8 +49,9 @@ test.describe('콘솔 셸 — 좌석 화면 모바일(375px) 반응형', () => {
     await expect(bottomNav.getByRole('link', { name: '좌석' })).toHaveAttribute('aria-current', 'page');
     await expect(bottomNav.getByRole('link', { name: '명단' })).not.toHaveAttribute('aria-current', 'page');
 
-    // 사이드바는 md 미만에서 숨김(hidden md:flex)
-    await expect(page.getByRole('link', { name: '← 행사 목록' })).toBeHidden();
+    // 사이드바는 md 미만에서 숨김(hidden md:flex). toBeHidden()은 미매칭 locator에도 PASS하는
+    // vacuous 위험이 있어 요소 존재를 전제로 하는 complementary 셀렉터로 단언한다.
+    await expect(page.getByRole('complementary', { name: '콘솔 사이드바' })).toBeHidden();
 
     await shot(page, 'mobile-seats-initial');
   });

@@ -52,6 +52,7 @@ export function AccountForm() {
         </p>
         <Link
           href="/accounts"
+          prefetch={false}
           className="min-h-touch flex items-center justify-center rounded-card bg-primary px-6 text-desk font-semibold text-primary-ink"
         >
           목록으로

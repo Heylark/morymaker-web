@@ -131,8 +131,11 @@ test.describe('콘솔 명단·초대 — 실용 톤(라이트) 회귀', () => {
     });
 
     // ① 기존 게스트 [수정] → 폼이 현재 값으로 채워짐(되돌림 전엔 input 5개 전부 빈 문자열이었음)
+    // REQ-0046 정합화: ConsoleModal(U3 공용 래퍼)이 <h2> 제목을 카드 자신이 소유하고
+    // children(이 폼)은 그 아래 형제로 렌더한다 — h2가 더 이상 <form> 내부 자손이 아니라
+    // form.getByRole('heading', ...)가 영구 미매칭된다. dialog 스코프로 교체한다.
     await row.getByRole('button', { name: '수정' }).click();
-    await expect(form.getByRole('heading', { name: '참석자 수정' })).toBeVisible();
+    await expect(page.getByRole('dialog').getByRole('heading', { name: '참석자 수정' })).toBeVisible();
     const orig = await readForm();
     expect(orig.name, '편집 오픈 시 이름이 빈 값이면 편집 폼 미채움 회귀').not.toBe('');
     expect(orig.phone, '편집 오픈 시 연락처가 빈 값이면 편집 폼 미채움 회귀').not.toBe('');
@@ -155,10 +158,43 @@ test.describe('콘솔 명단·초대 — 실용 톤(라이트) 회귀', () => {
 
     // ③ "개별 등록"(신규) → 빈 폼(직전 편집 상태가 새어나오지 않는지)
     await page.getByRole('button', { name: '개별 등록' }).click();
-    await expect(form.getByRole('heading', { name: '개별 등록' })).toBeVisible();
+    await expect(page.getByRole('dialog').getByRole('heading', { name: '개별 등록' })).toBeVisible();
     for (let i = 0; i < 5; i++) {
       await expect(inputs.nth(i)).toHaveValue('');
     }
+    await form.getByRole('button', { name: '취소' }).click();
+  });
+
+  /**
+   * 편집 모달 포커스 트랩 순환 회귀 — 되돌림 반영(적대적 검토 확증 결함) 봉합. `use-overlay-
+   * focus-trap.ts`의 FOCUSABLE_SELECTOR가 폼 컨트롤(input)을 열거하지 않으면, Tab 순환 경계
+   * (first/last)가 버튼 2개(취소·수정)로만 계산돼 입력 필드 5개가 순환에서 배제된다 — 키보드
+   * 사용자가 버튼에서 다시 입력 필드로 돌아갈 수 없다(WCAG 2.1.1/2.4.3). 마지막 버튼→Tab→첫
+   * 요소(이름 input), 첫 요소→Shift+Tab→마지막 버튼(수정) 순환을 직접 단언한다.
+   */
+  test('ADM-05 편집 모달 포커스 트랩 — Tab 순환이 입력 필드를 포함한다 (되돌림 반영)', async ({ page }) => {
+    await login(page);
+    await page.goto(`/events/${EID}/roster`);
+    await assertLightNoGlowNoBlackBorder(page);
+
+    const row = page.locator('tr', { hasText: '테스트게스트' });
+    await row.getByRole('button', { name: '수정' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('heading', { name: '참석자 수정' })).toBeVisible();
+
+    const form = page.locator('form');
+    const firstInput = form.locator('input').first();
+    const saveButton = form.getByRole('button', { name: '수정' });
+
+    // 마지막 focusable(저장 버튼)에서 Tab → 첫 focusable(이름 input)로 감겨야 한다.
+    await saveButton.focus();
+    await page.keyboard.press('Tab');
+    await expect(firstInput).toBeFocused();
+
+    // 첫 focusable(이름 input)에서 Shift+Tab → 마지막 focusable(저장 버튼)로 감겨야 한다.
+    await page.keyboard.press('Shift+Tab');
+    await expect(saveButton).toBeFocused();
+
     await form.getByRole('button', { name: '취소' }).click();
   });
 });

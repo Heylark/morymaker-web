@@ -49,6 +49,7 @@ export default function ParkingBoardPage() {
         <h1 className="text-desk-lg font-semibold text-ink">주차 보드</h1>
         <Link
           href="/staff/parking-board/new"
+          prefetch={false}
           className="min-h-touch rounded-card bg-primary px-4 py-2 text-sm font-semibold text-primary-ink"
         >
           새 자리 등록

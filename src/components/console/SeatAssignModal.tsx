@@ -1,12 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/shared/Button';
 import { StatePill } from '@/components/shared/StatePill';
 import { useGuests } from '@/hooks/useGuests';
 import { useSeatAssignments } from '@/hooks/useSeatAssignments';
 import { useReplaceSeatAssignments } from '@/hooks/useReplaceSeatAssignments';
 import { ConsoleApiError } from '@/lib/api/console-http';
+import { ConsoleModal } from './modal/ConsoleModal';
+import { useDirty } from './modal/useDirty';
 import type { GuestResponse } from '@/types/guest';
 import type { SeatAssignmentEntryRequest, SeatGroupResponse, SeatSlotResponse } from '@/types/seat';
 
@@ -107,6 +109,9 @@ interface SeatAssignEditorProps {
   initialSlots: SeatSlotResponse[];
   candidates: GuestResponse[];
   onClose: () => void;
+  /** 편집 변경 존재 여부를 래퍼(`SeatAssignModal`)로 보고한다 — 래퍼 스코프에는 `rows`·
+   * `memberIds`(이 컴포넌트의 지역 state)가 없어 래퍼가 직접 dirty를 계산할 수 없다. */
+  onDirtyChange: (dirty: boolean) => void;
 }
 
 /**
@@ -114,12 +119,22 @@ interface SeatAssignEditorProps {
  * 데이터가 없는 상태에서 로컬 state를 초기화하는 useEffect 동기화를 피하기 위한 게이트).
  * 마운트 시점 1회 lazy 초기화로 편집 세션을 시작하고, 저장 성공 시 onClose로 전체 모달이
  * 언마운트되므로 배경 refetch로 인한 stale 동기화 문제가 없다.
+ *
+ * 이 컴포넌트 자체가 조건부 마운트 대상이므로 `useDirty(..., true)`의 마운트 기준 의미론이
+ * 정확하다 — 마운트 시점 스냅샷(초기 rows·memberIds)이 기준점이 되고, 이후 편집으로
+ * 스냅샷이 달라지면 dirty=true다. 자유석(`numbering=false`) 편집은 `rows`가 아니라 `memberIds`를
+ * 바꾸므로 두 state를 함께 스냅샷에 담는다.
  */
-function SeatAssignEditor({ eid, group, initialSlots, candidates, onClose }: SeatAssignEditorProps) {
+function SeatAssignEditor({ eid, group, initialSlots, candidates, onClose, onDirtyChange }: SeatAssignEditorProps) {
   const [rows, setRows] = useState<AssignRow[]>(() => deriveOnRows(initialSlots));
   const [memberIds, setMemberIds] = useState<string[]>(() => deriveOffMemberIds(initialSlots));
   const [query, setQuery] = useState('');
   const replaceMutation = useReplaceSeatAssignments(eid);
+
+  const dirty = useDirty(JSON.stringify({ rows, memberIds }), true);
+  useEffect(() => {
+    onDirtyChange(dirty);
+  }, [dirty, onDirtyChange]);
 
   const nameById = useMemo(() => {
     const map = new Map<string, string>();
@@ -315,38 +330,41 @@ function OffModeEditor({ memberIds, setMemberIds, candidates, nameById, query, s
 }
 
 /**
- * 배정 편집 모달 — GuestEditModal 셸을 그대로 미러링한다(fixed inset-0 ... bg-black/40 +
- * rounded-card border-line-soft bg-surface). 폼이 아니라 행 이동·선택 인터랙션이라
- * react-hook-form 대신 로컬 state로 편집한다. 부모(SeatsClient)가 `assigningGroup`으로 조건부
- * 마운트하므로 `open` prop은 받지 않는다.
+ * 배정 편집 모달 — GuestEditModal 셸을 그대로 미러링한다(`ConsoleModal`이 카드·스크림·닫기
+ * 3경로를 소유, size="lg"). 폼이 아니라 행 이동·선택 인터랙션이라 react-hook-form 대신 로컬
+ * state로 편집한다. 부모(SeatsClient)가 `assigningGroup`으로 조건부 마운트하므로 `open` prop은
+ * 받지 않고 `ConsoleModal`에는 상수 `open`(=true)을 넘긴다 — `SeatsClient` 자체는 무접촉이다.
+ *
+ * dirty는 이 컴포넌트 스코프에 없다(`rows`·`memberIds`는 `SeatAssignEditor`의 지역 state) —
+ * Editor가 `onDirtyChange`로 보고하는 값을 로컬 state에 받아 그대로 `ConsoleModal`에 전달한다
+ * 데이터 로딩 중(Editor 미마운트)에는 dirty=false로 안전 퇴화한다.
  */
 export function SeatAssignModal({ eid, group, onClose }: SeatAssignModalProps) {
   const assignmentsQuery = useSeatAssignments(eid, group.groupNo);
   const guestsQuery = useGuests(eid);
+  const [dirty, setDirty] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="flex w-full max-w-lg flex-col gap-4 rounded-card border border-line-soft bg-surface p-6 shadow-lg">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-desk-lg font-semibold text-ink">{group.label} 배정</h2>
-          <StatePill tone={group.numbering ? 'done' : 'pending'}>{group.numbering ? '지정석' : '자유석'}</StatePill>
-        </div>
-
-        {(assignmentsQuery.isLoading || guestsQuery.isLoading) && <p className="text-ink-muted">불러오는 중...</p>}
-        {(assignmentsQuery.isError || guestsQuery.isError) && (
-          <p className="text-danger">배정 정보를 불러오지 못했습니다.</p>
-        )}
-
-        {assignmentsQuery.data && guestsQuery.data && (
-          <SeatAssignEditor
-            eid={eid}
-            group={group}
-            initialSlots={assignmentsQuery.data}
-            candidates={guestsQuery.data.items}
-            onClose={onClose}
-          />
-        )}
+    <ConsoleModal open onClose={onClose} title={`${group.label} 배정`} dirty={dirty} size="lg">
+      <div className="flex justify-end">
+        <StatePill tone={group.numbering ? 'done' : 'pending'}>{group.numbering ? '지정석' : '자유석'}</StatePill>
       </div>
-    </div>
+
+      {(assignmentsQuery.isLoading || guestsQuery.isLoading) && <p className="text-ink-muted">불러오는 중...</p>}
+      {(assignmentsQuery.isError || guestsQuery.isError) && (
+        <p className="text-danger">배정 정보를 불러오지 못했습니다.</p>
+      )}
+
+      {assignmentsQuery.data && guestsQuery.data && (
+        <SeatAssignEditor
+          eid={eid}
+          group={group}
+          initialSlots={assignmentsQuery.data}
+          candidates={guestsQuery.data.items}
+          onClose={onClose}
+          onDirtyChange={setDirty}
+        />
+      )}
+    </ConsoleModal>
   );
 }
