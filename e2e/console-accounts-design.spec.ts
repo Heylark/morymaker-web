@@ -110,7 +110,11 @@ test.describe('ADM-11 계정·권한 — SYSTEM_ADMIN 전용 auth 연동', () =>
 
     await assertLightNoGlowNoBlackBorder(page);
     await expect(page.getByRole('heading', { name: '계정 관리' })).toBeVisible();
-    await expect(page.getByText(SYSTEM_ADMIN_EMAIL, { exact: false })).toBeVisible();
+    // REQ-0046 정합화: ConsoleShell 사이드바 Zone4(SessionZone)가 로그인 계정 이메일을 상시
+    // 노출하게 되어, 페이지 전체 스코프의 getByText(email)가 계정 목록 행과 사이드바 세션
+    // 표시 2곳에 매칭되는 strict mode violation이 생겼다(콘솔 회귀 전에는 사이드바에 세션
+    // UI 자체가 없었다). 목록 본문(<main>)으로 스코프를 좁혀 계정 목록 행만 특정한다.
+    await expect(page.locator('main').getByText(SYSTEM_ADMIN_EMAIL, { exact: false })).toBeVisible();
     await shot(page, 'ADM-11-accounts-list-desktop');
 
     // 생성 화면 진입

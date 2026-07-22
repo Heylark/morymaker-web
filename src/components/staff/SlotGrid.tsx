@@ -23,6 +23,7 @@ export function SlotGrid({ records }: SlotGridProps) {
         <Link
           key={record.id}
           href={`/staff/parking-board/${record.id}`}
+          prefetch={false}
           className={`flex min-h-touch flex-col gap-1 rounded-card border p-3 ${STATUS_STYLE[record.status] ?? 'border-line bg-surface'}`}
         >
           <span className="text-desk font-semibold text-ink">{record.slotDisplay}</span>

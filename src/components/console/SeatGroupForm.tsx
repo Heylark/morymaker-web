@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useCreateSeatGroup } from '@/hooks/useCreateSeatGroup';
 import { useUpdateSeatGroup } from '@/hooks/useUpdateSeatGroup';
 import type { SeatGroupResponse } from '@/types/seat';
+import { ConsoleModal } from './modal/ConsoleModal';
 
 interface SeatGroupFormValues {
   label: string;
@@ -26,18 +27,20 @@ export function toFormValues(group?: SeatGroupResponse): SeatGroupFormValues {
 }
 
 /**
- * 그룹 생성·수정 모달 — GuestEditModal 셸을 그대로 미러링한다(fixed inset-0 ... bg-black/40 +
- * rounded-card border-line-soft bg-surface, `if(!open) return null`). `values` 옵션으로
- * 편집 대상(group)이 바뀔 때마다 폼을 동기화한다 — 마운트 시점 1회만 반영되는 defaultValues만
- * 으로는 그룹을 바꿔 다시 열어도 이전 값이 남는 버그가 재발한다(GuestEditModal 주석 근거 동일).
- * groupNo·sortOrder는 서버 자동 채번/불변이라 이 폼에 아예 노출하지 않는다.
+ * 그룹 생성·수정 모달 — GuestEditModal 셸을 그대로 미러링한다(`ConsoleModal`이 카드·스크림·닫기
+ * 3경로를 소유). `values` 옵션으로 편집 대상(group)이 바뀔 때마다 폼을 동기화한다 — 마운트 시점
+ * 1회만 반영되는 defaultValues만으로는 그룹을 바꿔 다시 열어도 이전 값이 남는 버그가 재발한다
+ * (GuestEditModal 주석 근거 동일). groupNo·sortOrder는 서버 자동 채번/불변이라 이 폼에 아예
+ * 노출하지 않는다.
+ *
+ * dirty 판정은 `formState.isDirty`를 그대로 넘긴다 — GuestEditModal과 동일 이유다.
  */
 export function SeatGroupForm({ eid, open, group, onClose }: SeatGroupFormProps) {
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm<SeatGroupFormValues>({
     defaultValues: toFormValues(group),
     values: toFormValues(group),
@@ -45,8 +48,6 @@ export function SeatGroupForm({ eid, open, group, onClose }: SeatGroupFormProps)
   const createMutation = useCreateSeatGroup(eid);
   const updateMutation = useUpdateSeatGroup(eid);
   const pending = createMutation.isPending || updateMutation.isPending;
-
-  if (!open) return null;
 
   const onSubmit = async (values: SeatGroupFormValues) => {
     const payload = { label: values.label, numbering: values.numbering };
@@ -61,13 +62,14 @@ export function SeatGroupForm({ eid, open, group, onClose }: SeatGroupFormProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="flex w-full max-w-md flex-col gap-4 rounded-card border border-line-soft bg-surface p-6 shadow-lg"
-      >
-        <h2 className="text-desk-lg font-semibold text-ink">{group ? '좌석 그룹 수정' : '좌석 그룹 추가'}</h2>
-
+    <ConsoleModal
+      open={open}
+      onClose={onClose}
+      title={group ? '좌석 그룹 수정' : '좌석 그룹 추가'}
+      dirty={isDirty}
+      size="md"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
           <span className="text-sm text-ink-muted">그룹명 (필수)</span>
           <input
@@ -103,6 +105,6 @@ export function SeatGroupForm({ eid, open, group, onClose }: SeatGroupFormProps)
           <p className="text-sm text-danger">저장 중 오류가 발생했습니다.</p>
         )}
       </form>
-    </div>
+    </ConsoleModal>
   );
 }

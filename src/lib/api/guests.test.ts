@@ -1,6 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConsoleApiError } from './console';
-import { GuestImportHeaderMismatchError, IMPORT_HEADER_MISMATCH, confirmImport, downloadImportTemplate, previewImport } from './guests';
+import {
+  GuestImportFilePasswordProtectedError,
+  GuestImportFileUnreadableError,
+  GuestImportHeaderMismatchError,
+  IMPORT_FILE_PASSWORD_PROTECTED,
+  IMPORT_FILE_UNREADABLE,
+  IMPORT_HEADER_MISMATCH,
+  confirmImport,
+  downloadImportTemplate,
+  previewImport,
+} from './guests';
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status });
@@ -89,5 +99,82 @@ describe('lib/api/guests — import 계열 에러 코드 분기(헤더 불일치
 
     expect(fetch).toHaveBeenCalledWith('/app/api/proxy/api/events/evt-1/guests/import/template', undefined);
     expect(result).toBe(xlsxResponse);
+  });
+});
+
+/**
+ * 엑셀로 열 수 없는 업로드 파일 — 형식 손상(IMPORT_FILE_UNREADABLE)과 암호 보호
+ * (IMPORT_FILE_PASSWORD_PROTECTED)는 원인도 해결 방법도 달라 서버가 별도 코드·문구로 내려준다.
+ * 두 코드 모두 서버 message를 그대로 보존해야 화면 안내가 뒤바뀌지 않는다 — 02-architect §8-3.
+ */
+describe('lib/api/guests — import 계열 에러 코드 분기(파일 손상·암호 보호 message 보존)', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', vi.fn());
+  });
+
+  it('previewImport — 400 IMPORT_FILE_UNREADABLE은 서버 message를 보존한 GuestImportFileUnreadableError로 던진다', async () => {
+    const message =
+      '엑셀 파일(.xlsx)이 아니거나 손상되어 열 수 없습니다 — CSV·PDF 등 다른 형식을 확장자만 바꿔 올린 경우에도 같은 안내가 나옵니다. 상단 [템플릿 받기]로 양식을 내려받아 그대로 채워 주세요.';
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({ error: { code: IMPORT_FILE_UNREADABLE, message } }, 400));
+
+    try {
+      await previewImport('evt-1', makeFile());
+      expect.fail('previewImport가 던지지 않았다');
+    } catch (err) {
+      expect(err).toBeInstanceOf(GuestImportFileUnreadableError);
+      expect(err).not.toBeInstanceOf(GuestImportFilePasswordProtectedError);
+      const unreadableError = err as GuestImportFileUnreadableError;
+      expect(unreadableError.status).toBe(400);
+      expect(unreadableError.message).toBe(message);
+    }
+  });
+
+  it('confirmImport — 동일 400 IMPORT_FILE_UNREADABLE도 message를 보존한다(공용 파싱 경로 대칭)', async () => {
+    const message =
+      '엑셀 파일(.xlsx)이 아니거나 손상되어 열 수 없습니다 — CSV·PDF 등 다른 형식을 확장자만 바꿔 올린 경우에도 같은 안내가 나옵니다. 상단 [템플릿 받기]로 양식을 내려받아 그대로 채워 주세요.';
+    vi.mocked(fetch).mockResolvedValue(jsonResponse({ error: { code: IMPORT_FILE_UNREADABLE, message } }, 400));
+
+    try {
+      await confirmImport('evt-1', makeFile());
+      expect.fail('confirmImport가 던지지 않았다');
+    } catch (err) {
+      expect(err).toBeInstanceOf(GuestImportFileUnreadableError);
+      expect((err as GuestImportFileUnreadableError).status).toBe(400);
+      expect((err as Error).message).toBe(message);
+    }
+  });
+
+  it('previewImport — 400 IMPORT_FILE_PASSWORD_PROTECTED는 서버 message를 보존한 GuestImportFilePasswordProtectedError로 던진다', async () => {
+    const message = '암호가 설정된 엑셀 파일은 열 수 없습니다 — 엑셀에서 암호를 해제한 뒤 다시 올려 주세요.';
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse({ error: { code: IMPORT_FILE_PASSWORD_PROTECTED, message } }, 400),
+    );
+
+    try {
+      await previewImport('evt-1', makeFile());
+      expect.fail('previewImport가 던지지 않았다');
+    } catch (err) {
+      expect(err).toBeInstanceOf(GuestImportFilePasswordProtectedError);
+      expect(err).not.toBeInstanceOf(GuestImportFileUnreadableError);
+      const passwordError = err as GuestImportFilePasswordProtectedError;
+      expect(passwordError.status).toBe(400);
+      expect(passwordError.message).toBe(message);
+    }
+  });
+
+  it('confirmImport — 동일 400 IMPORT_FILE_PASSWORD_PROTECTED도 message를 보존한다(공용 파싱 경로 대칭)', async () => {
+    const message = '암호가 설정된 엑셀 파일은 열 수 없습니다 — 엑셀에서 암호를 해제한 뒤 다시 올려 주세요.';
+    vi.mocked(fetch).mockResolvedValue(
+      jsonResponse({ error: { code: IMPORT_FILE_PASSWORD_PROTECTED, message } }, 400),
+    );
+
+    try {
+      await confirmImport('evt-1', makeFile());
+      expect.fail('confirmImport가 던지지 않았다');
+    } catch (err) {
+      expect(err).toBeInstanceOf(GuestImportFilePasswordProtectedError);
+      expect((err as GuestImportFilePasswordProtectedError).status).toBe(400);
+      expect((err as Error).message).toBe(message);
+    }
   });
 });

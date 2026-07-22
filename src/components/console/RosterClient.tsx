@@ -11,7 +11,7 @@ interface RosterClientProps {
 }
 
 /**
- * ADM-05 명단 관리 — 최상위 `<div>`(`EventConsoleShell`이 이미 `<main>`을 보유하고 있어
+ * ADM-05 명단 관리 — 최상위 `<div>`(`ConsoleShell`이 이미 `<main>`을 보유하고 있어
  * 여기서 또 `<main>`을 두면 랜드마크가 중복된다 — 기존 `ZoneList`/`ZoneDetailClient`가 저지른
  * 실수의 재발 방지).
  */

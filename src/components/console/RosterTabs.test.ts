@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TABS } from './RosterTabs';
 
 /**
- * RosterTabs는 EventConsoleShell과 달리 aria-current·E2E 활성 단언이 전부 없는 무방비
+ * RosterTabs는 셸 사이드바·탭바와 달리 aria-current·E2E 활성 단언이 전부 없는 무방비
  * 지점이다 — 이 단위 테스트가 이중 접두(/app/app) 회귀를 잡는 유일한 자동 게이트다.
  * vitest.config.ts의 전역 NEXT_PUBLIC_BASE_PATH='/app' 아래에서 실행되므로, path 빌더에
  * basePath가 섞이면(usePathname()과 좌표계 불일치) 즉시 RED가 된다.

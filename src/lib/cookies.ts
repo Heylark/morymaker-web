@@ -2,18 +2,18 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { isPublicSecure } from '@/lib/public-origin';
 
 /**
- * 쿠키 이름 상수 (5종, mm_ prefix).
- *
- * mm_pkce_verifier: 로그인 개시~콜백 사이 PKCE verifier/state/returnTo를 임시 보존한다(무서명 — 위조되어도
- * 교환 실패만 유발할 뿐 인가를 우회하지 못한다. state가 CSRF를 방어한다).
- * mm_auth: 게이트·화면 표시용 사용자 정보 — 위조 시 역할 상승으로 이어지므로 HMAC 서명 대상이다.
- * mm_id_token/mm_access_token/mm_refresh_token: JWT 자체가 서명돼 있어 별도 봉투 서명이 없다.
+ * 쿠키 이름 상수 재노출 — 실제 정의는 `cookie-names.ts`(Edge 안전 경계, node:crypto 무관).
+ * 이 파일을 import하던 기존 호출부는 그대로 `@/lib/cookies`에서 이름을 가져올 수 있다(무변경).
+ * `middleware.ts`는 이 파일이 아니라 `cookie-names.ts`를 직접 import한다 — 이 파일은 top-level에서
+ * `node:crypto`를 쓰므로 Edge Runtime에 들어가면 빌드가 실패한다.
  */
-export const COOKIE_PKCE = 'mm_pkce_verifier';
-export const COOKIE_AUTH = 'mm_auth';
-export const COOKIE_ID_TOKEN = 'mm_id_token';
-export const COOKIE_ACCESS_TOKEN = 'mm_access_token';
-export const COOKIE_REFRESH_TOKEN = 'mm_refresh_token';
+export {
+  COOKIE_PKCE,
+  COOKIE_AUTH,
+  COOKIE_ID_TOKEN,
+  COOKIE_ACCESS_TOKEN,
+  COOKIE_REFRESH_TOKEN,
+} from '@/lib/cookie-names';
 
 /**
  * 쿠키 secure 속성 — 공개(브라우저 도달) origin의 scheme이 https인지로 판정한다(모듈 로드

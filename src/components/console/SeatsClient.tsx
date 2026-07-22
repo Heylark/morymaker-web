@@ -10,7 +10,7 @@ interface SeatsClientProps {
 }
 
 /**
- * ADM-06 좌석 구성 — 최상위 `<div>`(`EventConsoleShell`이 이미 `<main>`을 보유하고 있어 여기서
+ * ADM-06 좌석 구성 — 최상위 `<div>`(`ConsoleShell`이 이미 `<main>`을 보유하고 있어 여기서
  * 또 `<main>`을 두면 랜드마크가 중복된다 — RosterClient/ZoneList와 동일한 관용구).
  *
  * 배정 편집은 `SeatAssignModal`이 `assigningGroup`으로 조건부 마운트된다 — 그룹 목록의 "배정"
