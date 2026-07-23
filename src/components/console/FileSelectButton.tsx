@@ -8,6 +8,11 @@ interface FileSelectButtonProps {
   disabled?: boolean;
   /** ExcelUpload의 ref.value='' 리셋 관용구 보존용(선택) */
   inputRef?: React.Ref<HTMLInputElement>;
+  /** 소비처가 지정하는 접근성 이름(예: '파일 (필수)') — file input에 aria-label로 실려
+   * 감싸는 label의 가시 텍스트('파일 선택' 등)보다 우선 적용된다(accessible name 계산 순서상
+   * aria-label > 연결된 <label> 텍스트). 미지정 시 감싸는 label 텍스트가 그대로 접근성
+   * 이름이 된다(기존 동작 무변화 — ExcelUpload는 이 prop을 쓰지 않음). */
+  ariaLabel?: string;
 }
 
 /**
@@ -26,7 +31,15 @@ interface FileSelectButtonProps {
  * 토큰 참조는 `--champagne`(런타임에 실제 방출되는 토큰) — `--color-primary`는 @theme inline
  * 브리지라 CSS 커스텀 프로퍼티로 방출되지 않아 arbitrary value에서 해석 불가하다.
  */
-export function FileSelectButton({ accept, onChange, fileName, label, disabled, inputRef }: FileSelectButtonProps) {
+export function FileSelectButton({
+  accept,
+  onChange,
+  fileName,
+  label,
+  disabled,
+  inputRef,
+  ariaLabel,
+}: FileSelectButtonProps) {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <label className="min-h-touch inline-flex cursor-pointer items-center rounded-card border border-line bg-transparent px-5 text-desk font-semibold text-primary hover:bg-surface-sunken focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--champagne)]">
@@ -37,6 +50,7 @@ export function FileSelectButton({ accept, onChange, fileName, label, disabled, 
           accept={accept}
           onChange={onChange}
           disabled={disabled}
+          aria-label={ariaLabel}
           className="sr-only"
         />
       </label>

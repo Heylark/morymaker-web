@@ -237,6 +237,7 @@ function IdleContentForm({ eid, open, content, onClose }: IdleContentFormProps) 
                 accept="image/png,image/jpeg,image/webp,video/mp4,video/webm"
                 onChange={handleFileChange}
                 fileName={file?.name ?? null}
+                ariaLabel="파일 (필수)"
               />
             </div>
             {fileError && <p className="text-sm text-danger">{fileError}</p>}
