@@ -9,6 +9,10 @@ import { TABS } from './RosterTabs';
  */
 describe('RosterTabs — TABS 좌표계 (basePath 이중 적용 회귀 가드)', () => {
   it('tab href는 basePath를 포함하지 않는다 — usePathname()이 strip한 값과 같은 좌표계여야 활성 판정이 성립한다', () => {
-    expect(TABS.map((tab) => tab.path('e1'))).toEqual(['/events/e1/roster', '/events/e1/roster/template']);
+    expect(TABS.map((tab) => tab.path('e1'))).toEqual([
+      '/events/e1/roster',
+      '/events/e1/roster/template',
+      '/events/e1/roster/history',
+    ]);
   });
 });

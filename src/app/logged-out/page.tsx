@@ -1,12 +1,14 @@
 import Link from 'next/link';
 
 /**
- * 로그아웃 종결 화면 — `SessionZone`의 로그아웃 하드 내비게이션 목적지.
+ * 로그아웃 종결 화면 — `GET /api/auth/logout`이 auth `/connect/logout`을 거쳐 돌아오는
+ * 착지점(auth에 등록된 `post_logout_redirect_uri`와 이 경로가 byte-exact로 같아야 한다 —
+ * 다르면 auth가 로그아웃 자체를 400으로 거부한다).
  *
- * `/oauth/login`을 목적지로 두지 않는 이유: `POST /api/auth/logout`은 web 쿠키만 지울 뿐 IdP
- * 세션을 종결하지 않는다. 그 상태에서 `/oauth/login`으로 보내면 auth가 살아 있는 세션을 폼·동의
- * 화면 없이 재인정해 사용자가 로그아웃 화면을 한 번도 보지 못한 채 같은 계정으로 재로그인된다
- * (공용 태블릿 계정 유출 경로). 이 화면은 그 재인정 왕복 자체를 만들지 않는다.
+ * `/oauth/login`을 목적지로 두지 않는 이유: 이 화면에 도달했다는 것은 이미 auth IdP 세션이
+ * 종결됐다는 뜻이지만(로그아웃 라우트가 web 쿠키 삭제와 auth 세션 종결을 한 응답에서 함께
+ * 수행한다), 그래도 `/oauth/login`으로 곧장 보내면 매 로그아웃마다 불필요한 OIDC 왕복이 한 번
+ * 더 생긴다 — 이 화면은 그 왕복을 사용자의 "다시 로그인" 클릭 시점으로 미룬다.
  *
  * `/forbidden`과 동일 계층 — 게이트 그룹((console)/(staff)/(kiosk)/(visitor)) 밖에 위치해
  * 이 페이지 자신은 어떤 role 게이트도 걸리지 않는다(CLAUDE.md "역할 게이트 폴백" — 폴백 대상
