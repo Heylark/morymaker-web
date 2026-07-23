@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/shared/Button';
+import { ConsoleButton } from './ConsoleButton';
 import { RosterTabs } from './RosterTabs';
 import { RosterTable } from './RosterTable';
 import { ExcelUploadModal } from './ExcelUploadModal';
@@ -17,8 +17,9 @@ interface RosterClientProps {
  * 실수의 재발 방지).
  *
  * 명단 표가 화면의 주 영역이 되도록 엑셀 업로드·초대 문자 발송을 상단 액션 버튼 2개로 옮기고
- * 각각을 모달 오버레이로 연다. 두 버튼 모두 발광 없는 보조 행동(`ghost`)이다 — 실제 CTA(확정·
- * 발송)는 모달 안에 있고, 화면당 발광 예산은 1개이므로 진입 버튼에는 골드를 쓰지 않는다.
+ * 각각을 모달 오버레이로 연다. 두 버튼 모두 진입 트리거는 `secondary`(테두리 affordance만, 골드
+ * 채움 없음)다 — 실제 CTA(확정·발송)는 모달 안의 `primary`이고, 화면당 발광 예산은 1개이므로
+ * 진입 버튼에는 골드(채움)를 쓰지 않는다.
  * 초대 문자 발송 버튼은 명단 건수와 무관하게 항상 활성 — 발송 가능 여부는 모달 안의 서버
  * 게이트(`useSmsGate`)가 유일하게 판정한다(클라이언트가 명단 수로 재판정하면 게이트가 두 곳에
  * 나뉘게 된다).
@@ -32,12 +33,12 @@ export function RosterClient({ eid }: RosterClientProps) {
       <h1 className="text-desk-lg font-semibold text-ink">명단 관리</h1>
       <RosterTabs eid={eid} />
       <div className="flex flex-wrap gap-3">
-        <Button variant="ghost" type="button" onClick={() => setUploadOpen(true)}>
+        <ConsoleButton variant="secondary" type="button" onClick={() => setUploadOpen(true)}>
           엑셀 명단 업로드
-        </Button>
-        <Button variant="ghost" type="button" onClick={() => setSendOpen(true)}>
+        </ConsoleButton>
+        <ConsoleButton variant="secondary" type="button" onClick={() => setSendOpen(true)}>
           초대 문자 발송
-        </Button>
+        </ConsoleButton>
       </div>
       <RosterTable eid={eid} />
       {uploadOpen && <ExcelUploadModal eid={eid} onClose={() => setUploadOpen(false)} />}
