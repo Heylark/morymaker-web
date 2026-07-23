@@ -14,6 +14,8 @@ interface SendGateProps {
  * 클라가 blocked를 재판정하면 stale 명단으로 누락자에게 오발송할 수 있어 구조적으로 차단).
  * `appliedTemplate===''`(템플릿 미설정)이면 별도로 추가 비활성 + 안내
  * 문구를 보여준다(서버 `send`가 이 상태에서 `NoSuchElementException`을 던지므로 UI가 먼저 막는다).
+ *
+ * 카드 테두리·배경·자체 제목은 갖지 않는다(내용 전용) — 모달 래퍼가 카드와 제목을 소유한다.
  */
 export function SendGate({ eid }: SendGateProps) {
   const [excludeAlreadySent, setExcludeAlreadySent] = useState(true);
@@ -30,9 +32,7 @@ export function SendGate({ eid }: SendGateProps) {
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-card border border-line-soft bg-surface p-4">
-      <h3 className="text-desk font-semibold text-ink">초대 문자 발송</h3>
-
+    <div className="flex flex-col gap-3">
       {isLoading && <p className="text-ink-muted">발송 대상 확인 중...</p>}
       {isError && <p className="text-danger">발송 게이트를 확인하지 못했습니다.</p>}
 
