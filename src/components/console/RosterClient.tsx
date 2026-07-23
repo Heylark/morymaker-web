@@ -4,7 +4,6 @@ import { RosterTabs } from './RosterTabs';
 import { RosterTable } from './RosterTable';
 import { ExcelUpload } from './ExcelUpload';
 import { SendGate } from './SendGate';
-import { SmsLogView } from './SmsLogView';
 
 interface RosterClientProps {
   eid: string;
@@ -23,7 +22,6 @@ export function RosterClient({ eid }: RosterClientProps) {
       <ExcelUpload eid={eid} />
       <RosterTable eid={eid} />
       <SendGate eid={eid} />
-      <SmsLogView eid={eid} />
     </div>
   );
 }
