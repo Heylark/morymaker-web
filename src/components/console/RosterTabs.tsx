@@ -15,6 +15,7 @@ interface RosterTabsProps {
 export const TABS = [
   { key: 'roster', label: '명단·발송', path: (eid: string) => `/events/${eid}/roster` },
   { key: 'template', label: '초대 문자 템플릿', path: (eid: string) => `/events/${eid}/roster/template` },
+  { key: 'history', label: '문자 발송 이력', path: (eid: string) => `/events/${eid}/roster/history` },
 ];
 
 /** 명단관리 하위 탭 nav — 각 탭은 독립 조회라 전환 시 상태 유실이 없다(각자 자체 React Query 캐시). */
