@@ -10,6 +10,8 @@ import {
   GuestImportHeaderMismatchError,
 } from '@/lib/api/guests';
 import { MergePreview } from './MergePreview';
+import { ConsoleButton } from './ConsoleButton';
+import { FileSelectButton } from './FileSelectButton';
 
 /**
  * 업로드 직전 클라측 파일 크기 사전검증 임계 — Next Route Handler(~1MB)·Spring(기본 1MB) 이중
@@ -93,19 +95,25 @@ export function ExcelUpload({ eid, onConfirmSuccess }: ExcelUploadProps) {
     <div className="flex flex-col gap-3">
       <p className="text-sm text-ink-muted">미리보기입니다 — 아래 [확정]을 눌러야 실제로 반영됩니다.</p>
 
-      <button
+      <ConsoleButton
+        variant="secondary"
+        className="w-fit"
         type="button"
         onClick={() => templateMutation.mutate()}
         disabled={templateMutation.isPending}
-        className="min-h-touch w-fit rounded-card border border-line-soft px-4 text-sm font-semibold text-ink hover:bg-surface-sunken disabled:opacity-50"
       >
         {templateMutation.isPending ? '받는 중...' : '템플릿 받기'}
-      </button>
+      </ConsoleButton>
       {templateMutation.isError && (
         <p className="text-sm text-danger">양식 다운로드에 실패했습니다. 잠시 후 다시 시도해 주세요.</p>
       )}
 
-      <input ref={fileInputRef} type="file" accept=".xlsx" onChange={handleFileChange} className="text-sm text-ink" />
+      <FileSelectButton
+        inputRef={fileInputRef}
+        accept=".xlsx"
+        onChange={handleFileChange}
+        fileName={file?.name ?? null}
+      />
       {sizeError && <p className="text-sm text-danger">{sizeError}</p>}
 
       {previewMutation.isPending && <p className="text-ink-muted">미리보기 확인 중...</p>}
@@ -119,21 +127,12 @@ export function ExcelUpload({ eid, onConfirmSuccess }: ExcelUploadProps) {
         <>
           <MergePreview preview={previewMutation.data} />
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleConfirm}
-              disabled={confirmMutation.isPending}
-              className="min-h-touch rounded-card bg-primary px-6 text-desk font-semibold text-primary-ink disabled:opacity-50"
-            >
+            <ConsoleButton variant="primary" type="button" onClick={handleConfirm} disabled={confirmMutation.isPending}>
               {confirmMutation.isPending ? '반영 중...' : '확정'}
-            </button>
-            <button
-              type="button"
-              onClick={handleReset}
-              className="min-h-touch rounded-card px-4 text-sm text-ink-muted hover:text-ink"
-            >
+            </ConsoleButton>
+            <ConsoleButton variant="ghost" type="button" onClick={handleReset}>
               다시 선택
-            </button>
+            </ConsoleButton>
           </div>
         </>
       )}
@@ -144,13 +143,9 @@ export function ExcelUpload({ eid, onConfirmSuccess }: ExcelUploadProps) {
             반영 완료 — 신규 {confirmMutation.data.newCount}건 · 수정 {confirmMutation.data.updatedCount}건 · 취소{' '}
             {confirmMutation.data.cancelledCount}건
           </p>
-          <button
-            type="button"
-            onClick={handleReset}
-            className="min-h-touch w-fit rounded-card px-4 text-sm text-ink-muted hover:text-ink"
-          >
+          <ConsoleButton variant="ghost" className="w-fit" type="button" onClick={handleReset}>
             새 파일 업로드
-          </button>
+          </ConsoleButton>
         </div>
       )}
       {confirmMutation.isError && (

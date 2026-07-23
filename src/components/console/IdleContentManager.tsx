@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Button } from '@/components/shared/Button';
 import { ConfirmDialog } from './ConfirmDialog';
 import { ConsoleModal } from './modal/ConsoleModal';
+import { ConsoleButton } from './ConsoleButton';
+import { FileSelectButton } from './FileSelectButton';
 import { useIdleContents } from '@/hooks/useIdleContents';
 import { useCreateIdleContent } from '@/hooks/useCreateIdleContent';
 import { useUpdateIdleContent } from '@/hooks/useUpdateIdleContent';
@@ -229,16 +230,16 @@ function IdleContentForm({ eid, open, content, onClose }: IdleContentFormProps) 
           </div>
         ) : (
           <>
-            <label className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1">
               <span className="text-sm text-ink-muted">파일 (필수)</span>
-              <input
+              <FileSelectButton
                 key={fileInputKey}
-                type="file"
                 accept="image/png,image/jpeg,image/webp,video/mp4,video/webm"
                 onChange={handleFileChange}
-                className="text-sm text-ink"
+                fileName={file?.name ?? null}
+                ariaLabel="파일 (필수)"
               />
-            </label>
+            </div>
             {fileError && <p className="text-sm text-danger">{fileError}</p>}
             <div className="flex flex-col gap-1">
               <span className="text-sm text-ink-muted">종류 (파일에서 자동 결정)</span>
@@ -285,21 +286,12 @@ function IdleContentForm({ eid, open, content, onClose }: IdleContentFormProps) 
         </label>
 
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={pending}
-            className="min-h-touch rounded-card px-4 text-sm text-ink-muted hover:text-ink"
-          >
+          <ConsoleButton variant="ghost" type="button" onClick={handleClose} disabled={pending}>
             취소
-          </button>
-          <button
-            type="submit"
-            disabled={pending || (!content && !file)}
-            className="min-h-touch rounded-card bg-primary px-6 text-desk font-semibold text-primary-ink disabled:opacity-50"
-          >
+          </ConsoleButton>
+          <ConsoleButton variant="primary" type="submit" disabled={pending || (!content && !file)}>
             {pending ? '저장 중...' : content ? '수정' : '등록'}
-          </button>
+          </ConsoleButton>
         </div>
         {(createMutation.isError || updateMutation.isError) && (
           <p className="text-sm text-danger">저장 중 오류가 발생했습니다.</p>
@@ -343,9 +335,9 @@ export function IdleContentManager({ eid }: IdleContentManagerProps) {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h2 className="text-desk-lg font-semibold text-ink">대기화면 콘텐츠</h2>
-        <Button variant="gold" type="button" onClick={openCreate}>
+        <ConsoleButton variant="primary" type="button" onClick={openCreate}>
           콘텐츠 등록
-        </Button>
+        </ConsoleButton>
       </div>
 
       {isLoading && <p className="text-ink-muted">불러오는 중...</p>}
@@ -367,12 +359,12 @@ export function IdleContentManager({ eid }: IdleContentManagerProps) {
                 </span>
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" type="button" onClick={() => openEdit(content)}>
+                <ConsoleButton variant="ghost" type="button" onClick={() => openEdit(content)}>
                   수정
-                </Button>
-                <Button variant="ghost" type="button" onClick={() => setDeletingContent(content)}>
+                </ConsoleButton>
+                <ConsoleButton variant="ghost" type="button" onClick={() => setDeletingContent(content)}>
                   삭제
-                </Button>
+                </ConsoleButton>
               </div>
             </li>
           ))}
