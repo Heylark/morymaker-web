@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useSmsGate } from '@/hooks/useSmsGate';
 import { useSendSms } from '@/hooks/useSendSms';
 import { ConfirmDialog } from './ConfirmDialog';
+import { ConsoleButton } from './ConsoleButton';
 
 interface SendGateProps {
   eid: string;
@@ -69,14 +70,15 @@ export function SendGate({ eid }: SendGateProps) {
             <p className="text-sm text-danger">템플릿을 먼저 작성하세요 (초대 문자 템플릿 탭).</p>
           )}
 
-          <button
+          <ConsoleButton
+            variant="primary"
+            className="w-fit"
             type="button"
             disabled={!canSend}
             onClick={() => setConfirmOpen(true)}
-            className="min-h-touch w-fit rounded-card bg-primary px-6 text-desk font-semibold text-primary-ink disabled:opacity-50"
           >
             발송
-          </button>
+          </ConsoleButton>
           {sendMutation.isSuccess && sendMutation.data && (
             <p className="text-sm text-ink">
               발송 완료 — 성공 {sendMutation.data.sent}건 · 실패 {sendMutation.data.failed}건
