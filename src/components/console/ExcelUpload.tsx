@@ -20,14 +20,18 @@ const MAX_UPLOAD_BYTES = 1024 * 1024;
 
 interface ExcelUploadProps {
   eid: string;
+  /** 확정 임포트 성공 직후 1회 호출 — 모달 래퍼가 이 신호로 닫는다. 실패 시(throw) 호출되지 않는다. */
+  onConfirmSuccess?: () => void;
 }
 
 /**
  * File 선택 → 미리보기(`useImportPreview`) → `MergePreview` → [확정](`useConfirmImport`, 동일
  * File 재사용). confirmImport는 preview 토큰을 재사용하지 않고 파일을 다시 파싱하므로(사실 D),
  * 재선택 전까지는 항상 같은 File 객체로 두 호출을 수행한다 — 재선택 시 프리뷰가 자동 재실행된다.
+ *
+ * 카드 테두리·배경·자체 제목은 갖지 않는다(내용 전용) — 모달 래퍼가 카드와 제목을 소유한다.
  */
-export function ExcelUpload({ eid }: ExcelUploadProps) {
+export function ExcelUpload({ eid, onConfirmSuccess }: ExcelUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [sizeError, setSizeError] = useState<string | null>(null);
@@ -56,7 +60,8 @@ export function ExcelUpload({ eid }: ExcelUploadProps) {
 
   const handleConfirm = async () => {
     if (!file) return;
-    await confirmMutation.mutateAsync(file);
+    await confirmMutation.mutateAsync(file); // 실패 시 throw — 아래 콜백에 도달하지 않는다
+    onConfirmSuccess?.();
   };
 
   const handleReset = () => {
@@ -85,8 +90,7 @@ export function ExcelUpload({ eid }: ExcelUploadProps) {
       : null;
 
   return (
-    <div className="flex flex-col gap-3 rounded-card border border-line-soft bg-surface p-4">
-      <h3 className="text-desk font-semibold text-ink">엑셀 명단 업로드</h3>
+    <div className="flex flex-col gap-3">
       <p className="text-sm text-ink-muted">미리보기입니다 — 아래 [확정]을 눌러야 실제로 반영됩니다.</p>
 
       <button
