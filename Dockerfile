@@ -69,10 +69,15 @@ USER node
 
 EXPOSE 50000
 
-# basePath=/app이라 GET / 는 404 — 앱 루트는 /app 하위에서 서빙된다(playwright webServer
-# 레디니스 폴링과 동일 좌표계). 판정은 docker inspect health status로만 단언할 것(호스트
-# curl 갈음 금지 — busybox wget 변종별 --spider 거동 차이를 흡수한다).
+# 전용 liveness 라우트(/api/health, 200 직접 반환)를 찌른다 — 예전엔 /app을 찔러 무쿠키
+# 요청이 로그인 리다이렉트 체인을 타고 외부 auth 서버(https)까지 나갔고, wget이 그 https 홉을
+# 추적하며 spawn한 ssl_client 자식을 wait() 없이 남겨 PID 1(Node)이 거두지 못한 채 좀비로
+# 영구 잔류시켰다(30초 간격 누적 — 운영에서 10만+ 실측). node http.get은 3xx를 자동 추적하지
+# 않으므로 라우트가 미래에 바뀌어 다시 리다이렉트를 반환하더라도(statusCode<400 그대로 healthy
+# 판정) 외부로 나가는 요청 자체가 생기지 않는다 — 라우트가 200을 고정 반환하는 현재 상태와
+# 무관하게 서 있는 2차 방어선이다. wget 대신 node를 쓰는 이유도 동일 원리: busybox wget
+# 변종의 --spider 리다이렉트 추적 거동은 이미지마다 달라 신뢰할 수 없다.
 HEALTHCHECK --start-period=10s --interval=30s --timeout=3s --retries=3 \
-  CMD wget -q --spider http://127.0.0.1:50000/app || exit 1
+  CMD node -e "const http=require('http');const r=http.get('http://127.0.0.1:50000/app/api/health',res=>{process.exit(res.statusCode<400?0:1);});r.on('error',()=>process.exit(1));r.setTimeout(2000,()=>{r.destroy();process.exit(1);});"
 
 ENTRYPOINT ["node", "server.js"]
